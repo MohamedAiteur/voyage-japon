@@ -1074,6 +1074,14 @@
             <div class="input-group">
                 <label>Date</label>
                 <input type="text" id="prog-date" placeholder="Ex: 3 sept.">
+                
+                <!-- Planning et Maps -->
+    <label style="display:block; margin-top:15px;">Planning de la journée :</label>
+    <textarea id="prog-details" rows="4" style="width:100%; margin-bottom:10px;"></textarea>
+
+    <label style="display:block;">Lien Google Maps :</label>
+    <input type="text" id="prog-maps" placeholder="https://..." style="width:100%; margin-bottom:15px;">
+                
             </div>
             <div class="modal-buttons">
                 <button class="btn-modal cancel" onclick="closeModal('modal-programme')">Annuler</button>
@@ -1488,13 +1496,15 @@
             });
         }
 
-        // --- PROGRAMME ---
+// --- PROGRAMME ---
         function openAddProgrammeModal() {
             document.getElementById('prog-modal-title').innerText = "Ajouter un itinéraire";
             document.getElementById('prog-edit-id').value = "";
             document.getElementById('prog-ville').value = "";
             document.getElementById('prog-hotel').value = "";
             document.getElementById('prog-date').value = "";
+            document.getElementById('prog-details').value = "";
+            document.getElementById('prog-maps').value = "";
             openModal('modal-programme');
         }
 
@@ -1506,6 +1516,8 @@
                 document.getElementById('prog-ville').value = item.ville;
                 document.getElementById('prog-hotel').value = item.hotel;
                 document.getElementById('prog-date').value = item.date;
+                document.getElementById('prog-details').value = item.details || "";
+                document.getElementById('prog-maps').value = item.maps || "";
                 openModal('modal-programme');
             }
         }
@@ -1526,6 +1538,8 @@
                             <div class="card-subtitle" style="display:flex; align-items:center; gap: 8px; margin-bottom: 5px;">
                                 <i class="fa-solid fa-bed" style="color: #bbb;"></i> ${prog.hotel}
                             </div>
+                            <div style="font-size: 0.9rem; margin: 10px 0; color: #555; white-space: pre-wrap;">${prog.details || ''}</div>
+                            ${prog.maps ? `<a href="${prog.maps}" target="_blank" style="display:block; margin-bottom:10px; font-size: 0.8rem; color: #007bff;">Voir sur Google Maps</a>` : ''}
                             <button class="details-link" onclick="openEditProgrammeModal(${prog.id})">Modifier l'étape ></button>
                         </div>
                     </div>
@@ -1681,11 +1695,13 @@
 
         // ================= SAVE ACTIONS =================
 
-        function saveProgramme() {
+function saveProgramme() {
             const editId = document.getElementById('prog-edit-id').value;
             const ville = document.getElementById('prog-ville').value;
             const hotel = document.getElementById('prog-hotel').value;
             const date = document.getElementById('prog-date').value;
+            const details = document.getElementById('prog-details').value; // Nouveau
+            const maps = document.getElementById('prog-maps').value;       // Nouveau
 
             if (ville && hotel && date) {
                 if (editId) {
@@ -1694,73 +1710,26 @@
                         item.ville = ville;
                         item.hotel = hotel;
                         item.date = date;
+                        item.details = details; // Mise à jour
+                        item.maps = maps;       // Mise à jour
                     }
                 } else {
                     appData.programme.push({
                         id: Date.now(),
                         ville: ville,
                         hotel: hotel,
-                        date: date
+                        date: date,
+                        details: details, // Ajout
+                        maps: maps        // Ajout
                     });
                 }
                 
                 saveToLocalStorage();
                 renderProgramme();
                 closeModal('modal-programme');
-            }
-        }
-
-        function saveChecklist() {
-            const cat = document.getElementById('check-cat').value;
-            const text = document.getElementById('check-text').value;
-
-            if (text) {
-                appData.checklist.push({
-                    id: Date.now(),
-                    categorie: cat,
-                    texte: text,
-                    checked: false
-                });
-                saveToLocalStorage();
-                renderChecklist();
-                closeModal('modal-checklist');
-                document.getElementById('check-text').value = '';
-            }
-        }
-
-        function saveBudget() {
-            const name = document.getElementById('bud-name').value;
-            const amount = parseFloat(document.getElementById('bud-amount').value);
-
-            if (name && amount) {
-                appData.budget.push({
-                    id: Date.now(),
-                    nom: name,
-                    eur: amount
-                });
-                saveToLocalStorage();
-                updateBudgetUI();
-                closeModal('modal-budget');
-                document.getElementById('bud-name').value = '';
-                document.getElementById('bud-amount').value = '';
-            }
-        }
-
-        function saveInfo() {
-            const title = document.getElementById('info-title').value;
-            const desc = document.getElementById('info-desc').value;
-
-            if (title && desc) {
-                appData.infos.push({
-                    id: Date.now(),
-                    titre: title,
-                    desc: desc
-                });
-                saveToLocalStorage();
-                renderInfos();
-                closeModal('modal-infos');
-                document.getElementById('info-title').value = '';
-                document.getElementById('info-desc').value = '';
+                // Optionnel : on vide les champs après l'enregistrement
+                document.getElementById('prog-details').value = '';
+                document.getElementById('prog-maps').value = '';
             }
         }
 
