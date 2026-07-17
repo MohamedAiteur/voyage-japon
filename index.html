@@ -4,13 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Notre Voyage au Japon</title>
-    <!-- Manifest pour l'installation sur l'écran d'accueil iPhone (PWA) -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Japon 2026">
     <link rel="apple-touch-icon" href="https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?q=80&w=180&auto=format&fit=crop">
     
-    <!-- Font Awesome pour les icônes -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <style>
@@ -19,8 +17,8 @@
             --card-bg: #ffffff;
             --text-main: #1a1a1a;
             --text-muted: #757575;
-            --accent: #e60012; /* Rouge Japon */
-            --accent-green: #7d9385; /* Couleur de tes boutons + sur tes screens */
+            --accent: #e60012;
+            --accent-green: #7d9385;
             --border-radius: 20px;
         }
 
@@ -35,12 +33,11 @@
         body {
             background-color: var(--bg-color);
             color: var(--text-main);
-            padding-bottom: 90px; /* Espace pour la barre de navigation */
+            padding-bottom: 90px;
             min-height: 100vh;
             overflow-x: hidden;
         }
 
-        /* En-tête avec le Mont Fuji pour l'Accueil */
         .home-header {
             position: relative;
             height: 380px;
@@ -101,7 +98,6 @@
             font-weight: 500;
         }
 
-        /* En-têtes des autres pages */
         .page-header {
             padding: 30px 20px 15px 20px;
             background-color: var(--bg-color);
@@ -120,7 +116,6 @@
             font-weight: 500;
         }
 
-        /* Conteneurs de pages */
         .page {
             display: none;
             animation: fadeIn 0.3s ease-in-out;
@@ -139,7 +134,6 @@
             padding: 0 20px 20px 20px;
         }
 
-        /* Style des Cartes (Cards) */
         .card {
             background-color: var(--card-bg);
             border-radius: var(--border-radius);
@@ -147,6 +141,15 @@
             margin-bottom: 16px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.02);
             position: relative;
+        }
+
+        .card.clickable {
+            cursor: pointer;
+            transition: transform 0.1s ease;
+        }
+
+        .card.clickable:active {
+            transform: scale(0.98);
         }
 
         .card-header-row {
@@ -203,9 +206,9 @@
             color: #ccc;
             font-size: 1.2rem;
             cursor: pointer;
+            z-index: 5;
         }
 
-        /* Trajet des Vols */
         .flight-route {
             display: flex;
             justify-content: space-between;
@@ -271,7 +274,6 @@
             font-size: 0.85rem;
         }
 
-        /* Itinéraire (timeline) */
         .timeline {
             position: relative;
             padding-left: 20px;
@@ -316,9 +318,11 @@
             font-size: 0.9rem;
             font-weight: 600;
             text-decoration: none;
+            cursor: pointer;
+            border: none;
+            background: none;
         }
 
-        /* Checklist */
         .section-title {
             font-size: 0.85rem;
             font-weight: 800;
@@ -380,7 +384,6 @@
             color: var(--text-muted);
         }
 
-        /* Budget & Clavier */
         .live-rate {
             color: #72aa51;
             font-weight: 600;
@@ -512,7 +515,6 @@
             font-weight: 850;
         }
 
-        /* Boutons flottants de création (+) */
         .btn-add-float {
             position: fixed;
             bottom: 105px;
@@ -532,7 +534,6 @@
             z-index: 10;
         }
 
-        /* Boutons d'export/import */
         .sync-buttons-container {
             display: flex;
             gap: 15px;
@@ -560,7 +561,6 @@
             color: white;
         }
 
-        /* Barre de navigation inférieure fixe style iPhone */
         .nav-bar {
             position: fixed;
             bottom: 0;
@@ -572,7 +572,7 @@
             display: flex;
             justify-content: space-around;
             padding-top: 10px;
-            padding-bottom: 20px; /* Safe area pour le bas de l'iPhone */
+            padding-bottom: 20px;
             z-index: 100;
         }
 
@@ -594,10 +594,9 @@
         }
 
         .nav-item.active {
-            color: #7d9385; /* Couleur de tes icônes actives */
+            color: #7d9385;
         }
 
-        /* Modals pour ajouter des éléments */
         .modal {
             display: none;
             position: fixed;
@@ -617,6 +616,8 @@
             border-top-left-radius: 25px;
             border-top-right-radius: 25px;
             padding: 25px;
+            max-height: 90vh;
+            overflow-y: auto;
             animation: slideUp 0.3s ease-out;
         }
 
@@ -682,7 +683,7 @@
 </head>
 <body>
 
-    <!-- ================= CONTENU DE L'ACCUEIL ================= -->
+    <!-- ================= ACCUEIL ================= -->
     <div id="page-accueil" class="page active">
         <div class="home-header">
             <div class="home-header-content">
@@ -697,50 +698,40 @@
         </div>
 
         <div class="content-container" style="margin-top: 20px;">
-            <h2 class="section-title">Vols</h2>
-            <div id="vols-list">
-                <!-- Les cartes de vols seront générées par JavaScript -->
-            </div>
-            <div style="text-align: center; margin-top: 20px; font-size: 0.85rem; color: var(--text-muted); font-weight: 600;">
-                Connecté : phesoog@gmail.com
-            </div>
+            <h2 class="section-title">Vols (Appuie pour modifier)</h2>
+            <div id="vols-list"></div>
         </div>
     </div>
 
-    <!-- ================= CONTENU DU PROGRAMME ================= -->
+    <!-- ================= PROGRAMME ================= -->
     <div id="page-programme" class="page">
         <div class="page-header">
             <h1>Mon itinéraire</h1>
-            <p>Appuie sur un jour pour l'ouvrir</p>
+            <p>Appuie sur un jour pour le modifier</p>
         </div>
         <div class="content-container">
-            <div class="timeline" id="programme-list">
-                <!-- Généré par JS -->
-            </div>
+            <div class="timeline" id="programme-list"></div>
         </div>
-        <button class="btn-add-float" onclick="openModal('modal-programme')"><i class="fa-solid fa-plus"></i></button>
+        <button class="btn-add-float" onclick="openAddProgrammeModal()"><i class="fa-solid fa-plus"></i></button>
     </div>
 
-    <!-- ================= CONTENU DE LA CHECKLIST ================= -->
+    <!-- ================= CHECKLIST ================= -->
     <div id="page-checklist" class="page">
         <div class="page-header">
             <h1>Notre checklist</h1>
             <p id="checklist-progress">0/4 prêts pour le départ</p>
         </div>
-        <div class="content-container" id="checklist-categories">
-            <!-- Généré par JS (ÉLECTRONIQUE, VÊTEMENTS, etc.) -->
-        </div>
+        <div class="content-container" id="checklist-categories"></div>
         <button class="btn-add-float" onclick="openModal('modal-checklist')"><i class="fa-solid fa-plus"></i></button>
     </div>
 
-    <!-- ================= CONTENU DU BUDGET ================= -->
+    <!-- ================= BUDGET ================= -->
     <div id="page-budget" class="page">
         <div class="page-header">
             <h1>Budget & Convertisseur</h1>
             <div class="live-rate"><span class="live-dot"></span> 1 € = 186.0 ¥ (en direct)</div>
         </div>
         <div class="content-container">
-            <!-- Zone Clavier / Convertisseur -->
             <div class="calculator-screen">
                 <div class="screen-row">
                     <span class="screen-label">EUR</span>
@@ -767,31 +758,25 @@
                 <button class="key" onclick="pressKey('delete')"><i class="fa-solid fa-delete-left"></i></button>
             </div>
 
-            <!-- Dépenses prévues -->
             <div class="planned-budget-header">
                 <h2 class="section-title" style="margin:0;">Dépenses prévues</h2>
                 <div class="budget-badge" id="total-budget-badge">0.00 €</div>
             </div>
 
-            <div id="expenses-list">
-                <!-- Généré par JS -->
-            </div>
+            <div id="expenses-list"></div>
         </div>
         <button class="btn-add-float" onclick="openModal('modal-budget')"><i class="fa-solid fa-plus"></i></button>
     </div>
 
-    <!-- ================= CONTENU DES INFOS ================= -->
+    <!-- ================= INFOS ================= -->
     <div id="page-infos" class="page">
         <div class="page-header">
             <h1>Infos utiles</h1>
             <p>Tout ce qu'il faut avoir sous la main</p>
         </div>
         <div class="content-container">
-            <div id="infos-list">
-                <!-- Génré par JS -->
-            </div>
+            <div id="infos-list"></div>
 
-            <!-- BOUTONS D'IMPORT / EXPORT DE SAUVEGARDE -->
             <div class="sync-buttons-container">
                 <button class="btn-sync export" onclick="exportData()">
                     <i class="fa-solid fa-file-export"></i> Exporter mes données
@@ -805,7 +790,7 @@
         <button class="btn-add-float" onclick="openModal('modal-infos')"><i class="fa-solid fa-plus"></i></button>
     </div>
 
-    <!-- ================= BARRE DE NAVIGATION INFÉRIEURE ================= -->
+    <!-- ================= NAV BAR ================= -->
     <nav class="nav-bar">
         <div class="nav-item active" onclick="switchTab('accueil', this)">
             <i class="fa-solid fa-house"></i>
@@ -829,12 +814,53 @@
         </div>
     </nav>
 
-    <!-- ================= MODALS D'AJOUT ================= -->
+    <!-- ================= MODAL VOLS (MODIFICATION) ================= -->
+    <div class="modal" id="modal-vol">
+        <div class="modal-content">
+            <h3>Modifier le vol</h3>
+            <input type="hidden" id="vol-edit-index" value="">
+            
+            <div class="input-group">
+                <label>Compagnie Aérienne</label>
+                <input type="text" id="vol-compagnie" placeholder="Ex: Air France">
+            </div>
+            <div class="input-group">
+                <label>Date et Heure</label>
+                <input type="text" id="vol-date" placeholder="Ex: 31 août - 14h20">
+            </div>
+            <div style="display: flex; gap: 10px;">
+                <div class="input-group" style="flex: 1;">
+                    <label>Code Départ</label>
+                    <input type="text" id="vol-dep" placeholder="Ex: CDG">
+                </div>
+                <div class="input-group" style="flex: 2;">
+                    <label>Ville Départ</label>
+                    <input type="text" id="vol-dep-city" placeholder="Ex: Paris">
+                </div>
+            </div>
+            <div style="display: flex; gap: 10px;">
+                <div class="input-group" style="flex: 1;">
+                    <label>Code Arrivée</label>
+                    <input type="text" id="vol-arr" placeholder="Ex: KIX">
+                </div>
+                <div class="input-group" style="flex: 2;">
+                    <label>Ville Arrivée</label>
+                    <input type="text" id="vol-arr-city" placeholder="Ex: Osaka">
+                </div>
+            </div>
+            <div class="modal-buttons">
+                <button class="btn-modal cancel" onclick="closeModal('modal-vol')">Annuler</button>
+                <button class="btn-modal save" onclick="saveVol()">Enregistrer</button>
+            </div>
+        </div>
+    </div>
 
-    <!-- Modal Programme -->
+    <!-- ================= MODAL PROGRAMME ================= -->
     <div class="modal" id="modal-programme">
         <div class="modal-content">
-            <h3>Ajouter un itinéraire</h3>
+            <h3 id="prog-modal-title">Ajouter un itinéraire</h3>
+            <input type="hidden" id="prog-edit-id" value="">
+            
             <div class="input-group">
                 <label>Ville</label>
                 <input type="text" id="prog-ville" placeholder="Ex: Kyoto">
@@ -907,7 +933,7 @@
             </div>
             <div class="input-group">
                 <label>Détails / Description</label>
-                <textarea id="info-desc" rows="3" placeholder="Ex: Saisissez les adresses ou indications importantes..."></textarea>
+                <textarea id="info-desc" rows="3" placeholder="Ex: Saisissez les adresses importantes..."></textarea>
             </div>
             <div class="modal-buttons">
                 <button class="btn-modal cancel" onclick="closeModal('modal-infos')">Annuler</button>
@@ -916,15 +942,14 @@
         </div>
     </div>
 
-    <!-- ================= LOGIQUE JAVASCRIPT ================= -->
+    <!-- ================= LOGIQUE JS ================= -->
     <script>
         const TAUX_CHANGE = 186.0;
 
-        // Base de données par défaut de ton voyage (toutes les infos de tes screens d'origine)
         const defaultData = {
             vols: [
-                { type: "Aller", compagnie: "Air France", date: "08-31", dep: "CDG", depCity: "Paris", arr: "KIX", arrCity: "Osaka" },
-                { type: "Retour", compagnie: "Air France", date: "09-14", dep: "NRT", depCity: "Tokyo", arr: "CDG", arrCity: "Paris" }
+                { type: "Aller", compagnie: "Air France", date: "31 août - 14h20", dep: "CDG", depCity: "Paris", arr: "KIX", arrCity: "Osaka" },
+                { type: "Retour", compagnie: "Air France", date: "14 sept. - 23h15", dep: "NRT", depCity: "Tokyo", arr: "CDG", arrCity: "Paris" }
             ],
             programme: [
                 { id: 1, ville: "Osaka", hotel: "Arrivée KIX — Hotel Namba", date: "31 août" },
@@ -952,12 +977,10 @@
 
         let appData = JSON.parse(localStorage.getItem('voyage_japon_data')) || defaultData;
 
-        // Sauvegarde dans le navigateur
         function saveToLocalStorage() {
             localStorage.setItem('voyage_japon_data', JSON.stringify(appData));
         }
 
-        // Système d'onglets
         function switchTab(tabId, el) {
             document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
             document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
@@ -965,13 +988,11 @@
             document.getElementById('page-' + tabId).classList.add('active');
             el.classList.add('active');
             
-            // Re-calculer si on va sur la page budget
             if (tabId === 'budget') {
                 updateBudgetUI();
             }
         }
 
-        // Calcul du compte à rebours basé sur la date de départ : 31 Août 2026
         function updateCountdown() {
             const dateDepart = new Date("2026-08-31T00:00:00");
             const aujourdhui = new Date();
@@ -980,7 +1001,6 @@
             document.getElementById('days-count').innerText = joursRestants > 0 ? joursRestants : 0;
         }
 
-        // Modals
         function openModal(modalId) {
             document.getElementById(modalId).classList.add('active');
         }
@@ -989,21 +1009,76 @@
             document.getElementById(modalId).classList.remove('active');
         }
 
+        // --- EDITION DE VOLS ---
+        function openEditVolModal(index) {
+            const vol = appData.vols[index];
+            if (vol) {
+                document.getElementById('vol-edit-index').value = index;
+                document.getElementById('vol-compagnie').value = vol.compagnie;
+                document.getElementById('vol-date').value = vol.date;
+                document.getElementById('vol-dep').value = vol.dep;
+                document.getElementById('vol-dep-city').value = vol.depCity;
+                document.getElementById('vol-arr').value = vol.arr;
+                document.getElementById('vol-arr-city').value = vol.arrCity;
+                openModal('modal-vol');
+            }
+        }
+
+        function saveVol() {
+            const index = document.getElementById('vol-edit-index').value;
+            if (index !== "") {
+                const i = parseInt(index);
+                appData.vols[i].compagnie = document.getElementById('vol-compagnie').value;
+                appData.vols[i].date = document.getElementById('vol-date').value;
+                appData.vols[i].dep = document.getElementById('vol-dep').value;
+                appData.vols[i].dep-city = document.getElementById('vol-dep-city').value; // legacy fallback
+                appData.vols[i].depCity = document.getElementById('vol-dep-city').value;
+                appData.vols[i].arr = document.getElementById('vol-arr').value;
+                appData.vols[i].arr-city = document.getElementById('vol-arr-city').value; // legacy fallback
+                appData.vols[i].arrCity = document.getElementById('vol-arr-city').value;
+
+                saveToLocalStorage();
+                renderVols();
+                closeModal('modal-vol');
+            }
+        }
+
+        // --- MODE PROGRAMME ---
+        function openAddProgrammeModal() {
+            document.getElementById('prog-modal-title').innerText = "Ajouter un itinéraire";
+            document.getElementById('prog-edit-id').value = "";
+            document.getElementById('prog-ville').value = "";
+            document.getElementById('prog-hotel').value = "";
+            document.getElementById('prog-date').value = "";
+            openModal('modal-programme');
+        }
+
+        function openEditProgrammeModal(id) {
+            const item = appData.programme.find(p => p.id === id);
+            if (item) {
+                document.getElementById('prog-modal-title').innerText = "Modifier l'itinéraire";
+                document.getElementById('prog-edit-id').value = item.id;
+                document.getElementById('prog-ville').value = item.ville;
+                document.getElementById('prog-hotel').value = item.hotel;
+                document.getElementById('prog-date').value = item.date;
+                openModal('modal-programme');
+            }
+        }
+
         // ================= RENDUS DES LISTES =================
 
-        // Rendu Accueil (Vols)
         function renderVols() {
             const list = document.getElementById('vols-list');
             list.innerHTML = '';
-            appData.vols.forEach(vol => {
+            appData.vols.forEach((vol, index) => {
                 list.innerHTML += `
-                    <div class="card">
+                    <div class="card clickable" onclick="openEditVolModal(${index})">
                         <div class="card-header-row">
                             <div class="card-title-group">
                                 <div class="card-icon"><i class="fa-solid fa-plane"></i></div>
                                 <div>
-                                    <div class="card-title">${vol.type}</div>
-                                    <div class="card-subtitle">${vol.compagnie}</div>
+                                    <div class="card-title">${vol.type} — ${vol.compagnie}</div>
+                                    <div class="card-subtitle">Appuie pour modifier</div>
                                 </div>
                             </div>
                             <span class="card-date">${vol.date}</span>
@@ -1011,7 +1086,7 @@
                         <div class="flight-route">
                             <div class="flight-airport">
                                 <div class="airport-code">${vol.dep}</div>
-                                <div class="airport-city">${vol.depCity}</div>
+                                <div class="airport-city">${vol.depCity || vol['dep-city']}</div>
                             </div>
                             <div class="flight-line-container">
                                 <div class="flight-line"></div>
@@ -1019,7 +1094,7 @@
                             </div>
                             <div class="flight-airport right">
                                 <div class="airport-code">${vol.arr}</div>
-                                <div class="airport-city">${vol.arrCity}</div>
+                                <div class="airport-city">${vol.arrCity || vol['arr-city']}</div>
                             </div>
                         </div>
                     </div>
@@ -1027,7 +1102,6 @@
             });
         }
 
-        // Rendu Programme
         function renderProgramme() {
             const list = document.getElementById('programme-list');
             list.innerHTML = '';
@@ -1036,27 +1110,25 @@
                     <div class="timeline-item">
                         <div class="timeline-badge">${index + 1}</div>
                         <div class="card">
-                            <button class="delete-btn" onclick="deleteItem('programme', ${prog.id})"><i class="fa-solid fa-xmark"></i></button>
+                            <button class="delete-btn" onclick="event.stopPropagation(); deleteItem('programme', ${prog.id})"><i class="fa-solid fa-xmark"></i></button>
                             <div class="card-header-row" style="margin-bottom: 5px;">
                                 <div class="card-title" style="font-size: 1.3rem;">${prog.ville}</div>
                                 <span class="card-date">${prog.date}</span>
                             </div>
-                            <div class="card-subtitle" style="display:flex; align-items:center; gap: 8px;">
+                            <div class="card-subtitle" style="display:flex; align-items:center; gap: 8px; margin-bottom: 5px;">
                                 <i class="fa-solid fa-bed" style="color: #bbb;"></i> ${prog.hotel}
                             </div>
-                            <a href="#" class="details-link">Voir le détail ></a>
+                            <button class="details-link" onclick="openEditProgrammeModal(${prog.id})">Modifier l'étape ></button>
                         </div>
                     </div>
                 `;
             });
         }
 
-        // Rendu Checklist
         function renderChecklist() {
             const container = document.getElementById('checklist-categories');
             container.innerHTML = '';
 
-            // Regrouper par catégories
             const categories = {};
             appData.checklist.forEach(item => {
                 if (!categories[item.categorie]) {
@@ -1079,7 +1151,6 @@
                 container.innerHTML += catHtml;
             }
 
-            // Mettre à jour la barre de progression
             const checkedCount = appData.checklist.filter(i => i.checked).length;
             document.getElementById('checklist-progress').innerText = `${checkedCount}/${appData.checklist.length} prêts pour le départ`;
         }
@@ -1093,17 +1164,14 @@
             }
         }
 
-        // Rendu Budget
         let currentEurInput = "0";
 
         function updateBudgetUI() {
-            // Mise à jour de l'écran convertisseur
             document.getElementById('calc-eur').innerText = formatNumberString(currentEurInput);
             const valEur = parseFloat(currentEurInput) || 0;
             const valJpy = Math.round(valEur * TAUX_CHANGE);
             document.getElementById('calc-jpy').innerText = '¥ ' + valJpy.toLocaleString('fr-FR');
 
-            // Liste des dépenses et calcul total
             const list = document.getElementById('expenses-list');
             list.innerHTML = '';
             let totalEur = 0;
@@ -1151,12 +1219,10 @@
             updateBudgetUI();
         }
 
-        // Rendu Infos
         function renderInfos() {
             const list = document.getElementById('infos-list');
             list.innerHTML = '';
             
-            // Map d'icônes adaptées aux titres
             const iconsMap = {
                 "urgence": '<i class="fa-solid fa-phone"></i>',
                 "hôtel": '<i class="fa-solid fa-bed"></i>',
@@ -1190,7 +1256,6 @@
             });
         }
 
-        // Suppression d'un item générique
         function deleteItem(category, id) {
             if (confirm("Voulez-vous vraiment supprimer cet élément ?")) {
                 appData[category] = appData[category].filter(item => item.id !== id);
@@ -1203,29 +1268,35 @@
             }
         }
 
-        // ================= SAUVEGARDE DE NOUVEAUX ÉLÉMENTS =================
+        // ================= ENREGISTREMENTS =================
 
         function saveProgramme() {
+            const editId = document.getElementById('prog-edit-id').value;
             const ville = document.getElementById('prog-ville').value;
             const hotel = document.getElementById('prog-hotel').value;
             const date = document.getElementById('prog-date').value;
 
             if (ville && hotel && date) {
-                const newItem = {
-                    id: Date.now(),
-                    ville: ville,
-                    hotel: hotel,
-                    date: date
-                };
-                appData.programme.push(newItem);
+                if (editId) {
+                    const item = appData.programme.find(p => p.id === parseInt(editId));
+                    if (item) {
+                        item.ville = ville;
+                        item.hotel = hotel;
+                        item.date = date;
+                    }
+                } else {
+                    const newItem = {
+                        id: Date.now(),
+                        ville: ville,
+                        hotel: hotel,
+                        date: date
+                    };
+                    appData.programme.push(newItem);
+                }
+                
                 saveToLocalStorage();
                 renderProgramme();
                 closeModal('modal-programme');
-                
-                // Clear inputs
-                document.getElementById('prog-ville').value = '';
-                document.getElementById('prog-hotel').value = '';
-                document.getElementById('prog-date').value = '';
             }
         }
 
@@ -1244,7 +1315,6 @@
                 saveToLocalStorage();
                 renderChecklist();
                 closeModal('modal-checklist');
-                
                 document.getElementById('check-text').value = '';
             }
         }
@@ -1263,7 +1333,6 @@
                 saveToLocalStorage();
                 updateBudgetUI();
                 closeModal('modal-budget');
-                
                 document.getElementById('bud-name').value = '';
                 document.getElementById('bud-amount').value = '';
             }
@@ -1283,13 +1352,12 @@
                 saveToLocalStorage();
                 renderInfos();
                 closeModal('modal-infos');
-                
                 document.getElementById('info-title').value = '';
                 document.getElementById('info-desc').value = '';
             }
         }
 
-        // ================= FONCTIONS SYNC IMPORT / EXPORT JSON =================
+        // ================= SYNC JSON =================
 
         function exportData() {
             const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(appData));
@@ -1313,7 +1381,6 @@
                         appData = importedData;
                         saveToLocalStorage();
                         
-                        // Re-rendre tous les onglets
                         renderVols();
                         renderProgramme();
                         renderChecklist();
@@ -1325,13 +1392,12 @@
                         alert("❌ Format de fichier invalide.");
                     }
                 } catch (error) {
-                    alert("❌ Erreur lors de la lecture du fichier de sauvegarde.");
+                    alert("❌ Erreur lors de la lecture du fichier.");
                 }
             };
             reader.readAsText(file);
         }
 
-        // ================= INITIALISATION =================
         window.onload = function() {
             updateCountdown();
             renderVols();
