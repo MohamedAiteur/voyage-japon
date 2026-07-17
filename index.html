@@ -1229,7 +1229,7 @@
             ]
         };
 
-        let appData = JSON.parse(localStorage.getItem('voyage_japon_data')) || defaultData;
+        var appData = JSON.parse(localStorage.getItem('voyage_japon_data')) || defaultData;
 
         // Rétrocompatibilité si d'anciennes données sans dates globales existent
         if (!appData.tripTitle) appData.tripTitle = defaultData.tripTitle;
@@ -1238,7 +1238,20 @@
 
         function saveToLocalStorage() {
             localStorage.setItem('voyage_japon_data', JSON.stringify(appData));
+            // Envoie aussi la donnée vers Firebase pour que ta copine la voie en direct
+            if (window.saveToCloud) window.saveToCloud(appData);
         }
+
+        // Recalcule tout l'affichage - appelée au chargement ET quand une donnée arrive de l'autre téléphone
+        function refreshAllUI() {
+            updateCountdown();
+            renderVols();
+            renderProgramme();
+            renderChecklist();
+            updateBudgetUI();
+            renderInfos();
+        }
+        window.refreshAllUI = refreshAllUI;
 
         function switchTab(tabId, el) {
             document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
@@ -1784,6 +1797,51 @@ function saveProgramme() {
             renderInfos();
             fetchExchangeRate();
         };
+    </script>
+
+    <!-- ================= SYNCHRONISATION FIREBASE (TEMPS RÉEL) ================= -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+        import { getFirestore, doc, getDoc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBm8xMiTMBN1oI9Bc8ZyKBGeoWOcVnZ_yk",
+            authDomain: "monvoyageaujapon-d9744.firebaseapp.com",
+            projectId: "monvoyageaujapon-d9744",
+            storageBucket: "monvoyageaujapon-d9744.firebasestorage.app",
+            messagingSenderId: "770359975810",
+            appId: "1:770359975810:web:83eb1b5069f8c8a28b399b"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        // Un seul document partagé pour vous deux : voyage/data
+        const tripDocRef = doc(db, "voyage", "data");
+
+        let localWriteInProgress = false;
+
+        // Fonction appelée par saveToLocalStorage() pour pousser les données vers le cloud
+        window.saveToCloud = async function (data) {
+            localWriteInProgress = true;
+            try {
+                await setDoc(tripDocRef, data);
+            } catch (e) {
+                console.error("Erreur de sauvegarde Firebase :", e);
+            }
+            setTimeout(() => { localWriteInProgress = false; }, 500);
+        };
+
+        // Écoute en direct : dès que ta copine modifie quelque chose, ça se met à jour chez toi automatiquement
+        onSnapshot(tripDocRef, (snap) => {
+            if (localWriteInProgress) return;
+            if (snap.exists()) {
+                window.appData = snap.data();
+                if (window.refreshAllUI) window.refreshAllUI();
+            } else {
+                // Première connexion : personne n'a encore rien envoyé au cloud, on initialise avec les données actuelles
+                window.saveToCloud(window.appData);
+            }
+        });
     </script>
 </body>
 </html>
