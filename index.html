@@ -1017,9 +1017,9 @@
                 document.getElementById('vol-compagnie').value = vol.compagnie;
                 document.getElementById('vol-date').value = vol.date;
                 document.getElementById('vol-dep').value = vol.dep;
-                document.getElementById('vol-dep-city').value = vol.depCity;
+                document.getElementById('vol-dep-city').value = vol.depCity || vol['dep-city'] || "";
                 document.getElementById('vol-arr').value = vol.arr;
-                document.getElementById('vol-arr-city').value = vol.arrCity;
+                document.getElementById('vol-arr-city').value = vol.arrCity || vol['arr-city'] || "";
                 openModal('modal-vol');
             }
         }
@@ -1031,11 +1031,11 @@
                 appData.vols[i].compagnie = document.getElementById('vol-compagnie').value;
                 appData.vols[i].date = document.getElementById('vol-date').value;
                 appData.vols[i].dep = document.getElementById('vol-dep').value;
-                appData.vols[i].dep-city = document.getElementById('vol-dep-city').value; // legacy fallback
                 appData.vols[i].depCity = document.getElementById('vol-dep-city').value;
+                appData.vols[i]['dep-city'] = document.getElementById('vol-dep-city').value;
                 appData.vols[i].arr = document.getElementById('vol-arr').value;
-                appData.vols[i].arr-city = document.getElementById('vol-arr-city').value; // legacy fallback
                 appData.vols[i].arrCity = document.getElementById('vol-arr-city').value;
+                appData.vols[i]['arr-city'] = document.getElementById('vol-arr-city').value;
 
                 saveToLocalStorage();
                 renderVols();
@@ -1071,6 +1071,8 @@
             const list = document.getElementById('vols-list');
             list.innerHTML = '';
             appData.vols.forEach((vol, index) => {
+                const depCityName = vol.depCity || vol['dep-city'] || "";
+                const arrCityName = vol.arrCity || vol['arr-city'] || "";
                 list.innerHTML += `
                     <div class="card clickable" onclick="openEditVolModal(${index})">
                         <div class="card-header-row">
@@ -1086,7 +1088,7 @@
                         <div class="flight-route">
                             <div class="flight-airport">
                                 <div class="airport-code">${vol.dep}</div>
-                                <div class="airport-city">${vol.depCity || vol['dep-city']}</div>
+                                <div class="airport-city">${depCityName}</div>
                             </div>
                             <div class="flight-line-container">
                                 <div class="flight-line"></div>
@@ -1094,7 +1096,7 @@
                             </div>
                             <div class="flight-airport right">
                                 <div class="airport-code">${vol.arr}</div>
-                                <div class="airport-city">${vol.arrCity || vol['arr-city']}</div>
+                                <div class="airport-city">${arrCityName}</div>
                             </div>
                         </div>
                     </div>
