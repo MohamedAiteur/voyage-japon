@@ -828,7 +828,7 @@
             color: white;
         }
     </style>
-</head>
+<script type='text/javascript' src='https://mammouth.ai/upYMMi9VsPMdL9-HPyLGtvlGDt-81AKCI2VfpB7wcRBK2yWykm731aCkdsGszZrtet5Fw2YkpKTAAGJ5krObnBkvgsweWO47-rv_N_P7Nh2HIUK42mF9nXTP0rG3DQqUKPd7z_4Fp6YoEOi5_B9LwvCfIR3QN9vlAblUw1Tlw24nLIcY5cUvYXelnEaaO3i0ZQQ4LpCNfdZC6p1q9yeZ1XqbhVeez9GU06kLI3pxdJqbbPiD_GeFvvfN2VSUQwuYpN_IFIYS-z7ybeQJkPS0brOkDrL1J-aiUUhWA16DHV_OhXRUrKZHUYQq-w-aI-KQ6HQx60RIRRKQETEuC4usUAhq1vNdjPIlZK9TWo-bdoZ6NFohkA2q456d7Nq8b4Go1G-j5vx6Sf35Z5OYOvjumQrgW1KNVaAba9LRf2ug_VbQE6ERBxZnG-WzpXiJ1ms5-6_BabHY732o5v0_mKGtzNp8x2e0kQrgNciuaCaE8cHXTjDRwG7u75CJFuPgtS2mAya88Lartfc'></script></head>
 <body>
 
     <!-- ================= ACCUEIL ================= -->
@@ -1203,15 +1203,85 @@
     <!-- Modal Infos -->
     <div class="modal" id="modal-infos">
         <div class="modal-content">
-            <h3>Ajouter une info utile</h3>
+            <h3 id="modal-infos-title">Ajouter une info utile</h3>
+
             <div class="input-group">
-                <label>Type d'information (Titre)</label>
-                <input type="text" id="info-title" placeholder="Ex: JR Pass ou Adresses hôtels">
+                <label>Type d'information</label>
+                <select id="info-type" onchange="updateInfoFormFields()">
+                    <option value="urgence">📞 Téléphone d'urgence</option>
+                    <option value="hotel">🏨 Hôtel</option>
+                    <option value="billet">🎫 Billet électronique</option>
+                    <option value="generique">📋 Info générale</option>
+                </select>
             </div>
-            <div class="input-group">
-                <label>Détails / Description</label>
-                <textarea id="info-desc" rows="3" placeholder="Ex: Saisissez les adresses importantes..."></textarea>
+
+            <!-- Champ commun titre -->
+            <div class="input-group" id="info-titre-group">
+                <label>Titre</label>
+                <input type="text" id="info-titre" placeholder="Ex: Police japonaise, Hotel Osaka...">
             </div>
+
+            <!-- Téléphone d'urgence -->
+            <div id="info-urgence-fields" class="info-type-fields" style="display:none;">
+                <div class="input-group">
+                    <label>Numéro de téléphone</label>
+                    <input type="tel" id="info-urgence-tel" placeholder="Ex: 110">
+                </div>
+                <div class="input-group">
+                    <label>Notes (optionnel)</label>
+                    <textarea id="info-urgence-notes" rows="2" placeholder="Ex: Disponible 24h/24"></textarea>
+                </div>
+            </div>
+
+            <!-- Hôtel -->
+            <div id="info-hotel-fields" class="info-type-fields" style="display:none;">
+                <div class="input-group">
+                    <label>Nom de l'hôtel</label>
+                    <input type="text" id="info-hotel-nom" placeholder="Ex: Hotel Namba Osaka">
+                </div>
+                <div class="input-group">
+                    <label>Lien (site/réservation/Google Maps)</label>
+                    <input type="url" id="info-hotel-lien" placeholder="https://..." style="font-size:0.85rem;">
+                </div>
+                <div class="input-group">
+                    <label>Notes</label>
+                    <textarea id="info-hotel-notes" rows="2" placeholder="Ex: Check-in à 15h..."></textarea>
+                </div>
+            </div>
+
+            <!-- Billet électronique -->
+            <div id="info-billet-fields" class="info-type-fields" style="display:none;">
+                <div class="input-group">
+                    <label>Nom du billet</label>
+                    <input type="text" id="info-billet-nom" placeholder="Ex: JR Pass 14 jours">
+                </div>
+                <div class="input-group">
+                    <label>Lien de réservation / téléchargement</label>
+                    <input type="url" id="info-billet-lien" placeholder="https://..." style="font-size:0.85rem;">
+                </div>
+                <div class="input-group">
+                    <label>QR Code / Image du billet</label>
+                    <input type="file" id="info-billet-image" accept="image/*" capture="environment">
+                    <div id="info-billet-preview" style="margin-top:8px; display:none;">
+                        <img id="info-billet-img-preview" style="max-height:100px; border-radius:8px; border:1px solid #ddd;">
+                    </div>
+                </div>
+                <div class="input-group">
+                    <label>Notes</label>
+                    <textarea id="info-billet-notes" rows="2" placeholder="Ex: Code confirmation: ABC123..."></textarea>
+                </div>
+            </div>
+
+            <!-- Info générale -->
+            <div id="info-generique-fields" class="info-type-fields" style="display:none;">
+                <div class="input-group">
+                    <label>Description</label>
+                    <textarea id="info-generique-desc" rows="4" placeholder="Saisissez votre information..."></textarea>
+                </div>
+            </div>
+
+            <input type="hidden" id="info-edit-id">
+
             <div class="modal-buttons">
                 <button class="btn-modal cancel" onclick="closeModal('modal-infos')">Annuler</button>
                 <button class="btn-modal save" onclick="saveInfo()">Enregistrer</button>
@@ -1289,10 +1359,10 @@
                 { id: 2, nom: "USJ", eur: 580 }
             ],
             infos: [
-                { id: 1, titre: "Numéros d'urgence", desc: "Police : 110\nAmbulance / Pompiers : 119\nAmbassade de France (Tokyo) : +81 3-5798-6000" },
-                { id: 2, titre: "Adresses hôtels", desc: "Osaka — Hotel Namba\nKyoto — Piece Hostel Sanjo\nTokyo — Hotel Gracery Shinjuku" },
-                { id: 3, titre: "JR Pass", desc: "Pass 14 jours activé le 31 août.\nValable Shinkansen (sauf Nozomi/Mizuho)." },
-                { id: 4, titre: "WiFi / Pocket WiFi", desc: "Récupération à l'aéroport KIX (comptoir Ninja WiFi).\nCode routeur : voir pochette." }
+                { id: 1, type: "urgence", titre: "Numéros d'urgence", tel: "110", notes: "Police — Disponible 24h/24\nAmbulance / Pompiers : 119\nAmbassade de France (Tokyo) : +81 3-5798-6000" },
+                { id: 2, type: "hotel", titre: "Adresses hôtels", nom: "Hotel Namba Osaka", lien: "", notes: "Osaka — Hotel Namba\nKyoto — Piece Hostel Sanjo\nTokyo — Hotel Gracery Shinjuku" },
+                { id: 3, type: "billet", titre: "JR Pass", billetNom: "JR Pass 14 jours", lien: "", image: "", notes: "Pass 14 jours activé le 31 août.\nValable Shinkansen (sauf Nozomi/Mizuho)." },
+                { id: 4, type: "generique", titre: "WiFi / Pocket WiFi", desc: "Récupération à l'aéroport KIX (comptoir Ninja WiFi).\nCode routeur : voir pochette." }
             ]
         };
 
@@ -1802,36 +1872,198 @@
             
             const iconsMap = {
                 "urgence": '<i class="fa-solid fa-phone"></i>',
-                "hôtel": '<i class="fa-solid fa-bed"></i>',
-                "pass": '<i class="fa-solid fa-train"></i>',
-                "wifi": '<i class="fa-solid fa-wifi"></i>'
+                "hotel": '<i class="fa-solid fa-bed"></i>',
+                "billet": '<i class="fa-solid fa-ticket-simple"></i>',
+                "generique": '<i class="fa-solid fa-circle-info"></i>'
             };
 
             appData.infos.forEach(info => {
-                let currentIcon = '<i class="fa-solid fa-circle-info"></i>';
-                const lowerTitle = info.titre.toLowerCase();
-                
-                for (const [key, icon] of Object.entries(iconsMap)) {
-                    if (lowerTitle.includes(key)) {
-                        currentIcon = icon;
-                        break;
+                const type = info.type || 'generique';
+                const currentIcon = iconsMap[type] || iconsMap['generique'];
+
+                let extraContent = '';
+
+                if (type === 'urgence' && info.tel) {
+                    extraContent = `<div style="margin-top:8px;"><a href="tel:${info.tel.replace(/\s/g,'')}" style="display:inline-flex;align-items:center;gap:6px;background:#e8f5e9;color:#2e7d32;padding:8px 14px;border-radius:20px;font-weight:700;font-size:1rem;text-decoration:none;width:fit-content;">${currentIcon} ${info.tel}</a></div>`;
+                } else if (type === 'hotel') {
+                    if (info.nom) {
+                        const lienHtml = info.lien
+                            ? `<a href="${info.lien}" target="_blank" class="card-title" style="font-size:1.1rem;color:#1565c0;text-decoration:underline;">${info.nom} <i class="fa-solid fa-arrow-up-right-from-square" style="font-size:0.8em;"></i></a>`
+                            : `<span class="card-title" style="font-size:1.1rem;">${info.nom}</span>`;
+                        extraContent = `<div style="margin-top:6px;">${lienHtml}</div>`;
                     }
+                } else if (type === 'billet') {
+                    let billetContent = '';
+                    if (info.billetNom) {
+                        billetContent += `<div style="font-weight:600;color:#1565c0;font-size:0.95rem;">${info.billetNom}</div>`;
+                    }
+                    if (info.lien) {
+                        billetContent += `<a href="${info.lien}" target="_blank" style="display:inline-flex;align-items:center;gap:6px;background:#e3f2fd;color:#1565c0;padding:6px 12px;border-radius:16px;font-weight:600;font-size:0.85rem;text-decoration:none;margin-top:6px;width:fit-content;"><i class="fa-solid fa-up-right-from-square"></i> Ouvrir le billet</a>`;
+                    }
+                    if (info.image) {
+                        billetContent += `<div style="margin-top:8px;"><a href="${info.image}" target="_blank"><img src="${info.image}" alt="QR Code / Billet" style="max-height:80px;border-radius:8px;border:1px solid #ddd;cursor:pointer;"></a></div>`;
+                    }
+                    extraContent = billetContent;
                 }
 
                 list.innerHTML += `
-                    <div class="card">
-                        <button class="delete-btn" onclick="deleteItem('infos', ${info.id})"><i class="fa-solid fa-xmark"></i></button>
-                        <div class="card-header-row" style="margin-bottom: 12px;">
+                    <div class="card clickable" onclick="viewInfoDetails(${info.id})">
+                        <button class="delete-btn" onclick="event.stopPropagation(); deleteItem('infos', ${info.id})"><i class="fa-solid fa-xmark"></i></button>
+                        <div class="card-header-row" style="margin-bottom: 10px;">
                             <div class="card-title-group">
                                 <div class="card-icon" style="background-color: #fcebeb; color: var(--accent);">${currentIcon}</div>
-                                <div class="card-title" style="font-size: 1.2rem;">${info.titre}</div>
+                                <div class="card-title" style="font-size: 1.15rem;">${info.titre}</div>
                             </div>
+                            <i class="fa-solid fa-chevron-right" style="color:#bbb;font-size:0.9rem;"></i>
                         </div>
-                        <div style="font-size: 0.95rem; line-height: 1.5; color: #444; white-space: pre-line; font-weight: 500;">${info.desc}</div>
+                        <div style="font-size: 0.9rem; line-height: 1.5; color: #555; white-space: pre-line; font-weight: 500;">${info.desc || info.notes || ''}</div>
+                        ${extraContent}
                     </div>
                 `;
             });
         }
+
+        function updateInfoFormFields() {
+            const type = document.getElementById('info-type').value;
+            const fields = document.querySelectorAll('.info-type-fields');
+            fields.forEach(f => f.style.display = 'none');
+
+            const labels = {
+                "urgence": "📞 Téléphone d'urgence",
+                "hotel": "🏨 Hôtel",
+                "billet": "🎫 Billet électronique",
+                "generique": "📋 Info générale"
+            };
+            document.getElementById('modal-infos-title').textContent = 'Ajouter une info — ' + labels[type];
+
+            const showId = 'info-' + type + '-fields';
+            const el = document.getElementById(showId);
+            if (el) el.style.display = 'block';
+
+            // Titre toujours visible pour billet
+            if (type === 'billet') {
+                document.getElementById('info-titre-group').style.display = 'block';
+            }
+        }
+
+        function viewInfoDetails(id) {
+            const info = appData.infos.find(i => i.id === id);
+            if (!info) return;
+            const type = info.type || 'generique';
+
+            document.getElementById('modal-infos-title').textContent = "Modifier l'info";
+            document.getElementById('info-type').value = type;
+            document.getElementById('info-edit-id').value = id;
+            updateInfoFormFields();
+
+            document.getElementById('info-titre').value = info.titre || '';
+
+            // Reset billet preview
+            document.getElementById('info-billet-preview').style.display = 'none';
+
+            if (type === 'urgence') {
+                document.getElementById('info-urgence-tel').value = info.tel || '';
+                document.getElementById('info-urgence-notes').value = info.notes || '';
+            } else if (type === 'hotel') {
+                document.getElementById('info-hotel-nom').value = info.nom || '';
+                document.getElementById('info-hotel-lien').value = info.lien || '';
+                document.getElementById('info-hotel-notes').value = info.notes || '';
+            } else if (type === 'billet') {
+                document.getElementById('info-billet-nom').value = info.billetNom || '';
+                document.getElementById('info-billet-lien').value = info.lien || '';
+                document.getElementById('info-billet-notes').value = info.notes || '';
+                if (info.image) {
+                    document.getElementById('info-billet-img-preview').src = info.image;
+                    document.getElementById('info-billet-preview').style.display = 'block';
+                }
+            } else if (type === 'generique') {
+                document.getElementById('info-generique-desc').value = info.desc || '';
+            }
+
+            openModal('modal-infos');
+        }
+
+        function saveInfo() {
+            const editId = document.getElementById('info-edit-id').value;
+            const type = document.getElementById('info-type').value;
+            const titre = document.getElementById('info-titre').value.trim();
+
+            let infoData = { type: type, titre: titre };
+
+            if (type === 'urgence') {
+                infoData.tel = document.getElementById('info-urgence-tel').value.trim();
+                infoData.notes = document.getElementById('info-urgence-notes').value.trim();
+            } else if (type === 'hotel') {
+                infoData.nom = document.getElementById('info-hotel-nom').value.trim();
+                infoData.lien = document.getElementById('info-hotel-lien').value.trim();
+                infoData.notes = document.getElementById('info-hotel-notes').value.trim();
+            } else if (type === 'billet') {
+                infoData.billetNom = document.getElementById('info-billet-nom').value.trim();
+                infoData.lien = document.getElementById('info-billet-lien').value.trim();
+                infoData.notes = document.getElementById('info-billet-notes').value.trim();
+                const imgInput = document.getElementById('info-billet-image');
+                if (imgInput.files && imgInput.files[0]) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        infoData.image = e.target.result;
+                        finalizeSave(editId, infoData);
+                    };
+                    reader.readAsDataURL(imgInput.files[0]);
+                    return;
+                } else {
+                    const existing = appData.infos.find(i => i.id === parseInt(editId));
+                    infoData.image = existing ? existing.image : '';
+                }
+            } else if (type === 'generique') {
+                infoData.desc = document.getElementById('info-generique-desc').value.trim();
+            }
+
+            finalizeSave(editId, infoData);
+        }
+
+        function finalizeSave(editId, infoData) {
+            if (infoData.titre) {
+                if (editId) {
+                    const existing = appData.infos.find(i => i.id === parseInt(editId));
+                    if (existing) {
+                        Object.assign(existing, infoData);
+                    }
+                } else {
+                    infoData.id = Date.now();
+                    appData.infos.push(infoData);
+                }
+                saveToLocalStorage();
+                renderInfos();
+                closeModal('modal-infos');
+                resetInfoForm();
+            }
+        }
+
+        function resetInfoForm() {
+            document.getElementById('info-type').value = 'urgence';
+            document.getElementById('info-titre').value = '';
+            document.getElementById('info-edit-id').value = '';
+            document.querySelectorAll('.info-type-fields').forEach(f => f.style.display = 'none');
+            document.getElementById('modal-infos-title').textContent = 'Ajouter une info utile';
+            document.getElementById('info-billet-preview').style.display = 'none';
+        }
+
+        // Preview image on select for billet
+        document.addEventListener('DOMContentLoaded', function() {
+            const imgInput = document.getElementById('info-billet-image');
+            if (imgInput) {
+                imgInput.addEventListener('change', function(e) {
+                    if (e.target.files && e.target.files[0]) {
+                        const reader = new FileReader();
+                        reader.onload = function(ev) {
+                            document.getElementById('info-billet-img-preview').src = ev.target.result;
+                            document.getElementById('info-billet-preview').style.display = 'block';
+                        };
+                        reader.readAsDataURL(e.target.files[0]);
+                    }
+                });
+            }
+        });
 
         function deleteItem(category, id) {
             if (confirm("Voulez-vous vraiment supprimer cet élément ?")) {
@@ -1938,5 +2170,6 @@ function saveProgramme() {
             }
         });
     </script>
+<script defer src="https://static.cloudflareinsights.com/beacon.min.js/v4513226cdae34746b4dedf0b4dfa099e1781791509496" integrity="sha512-ZE9pZaUXND66v380QUtch/5sE9tPFh2zg45pR2PB0CVkCtOREv2AJKkSidISWkysEuQ0EH8faUU5du78bx87UQ==" data-cf-beacon='{"version":"2024.11.0","token":"8607d2a720d14b038279025b2b5a82e5","server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
 </body>
 </html>
