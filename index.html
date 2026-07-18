@@ -1348,19 +1348,6 @@
     </div>
 
     <!-- ================= MODAL APERÇU ITINÉRAIRE (VISUALISATION) ================= -->
-    <div class="modal" id="modal-view-programme">
-        <div class="modal-content">
-            <h3 id="view-prog-title">Étape du voyage</h3>
-            <div id="view-prog-details">
-                <!-- Rempli dynamiquement -->
-            </div>
-            <div class="modal-buttons">
-                <button class="btn-modal cancel" onclick="closeModal('modal-view-programme')">Fermer</button>
-                <button class="btn-modal save" id="btn-trigger-edit-prog" style="background-color: var(--accent-green); color: white;">Modifier</button>
-            </div>
-        </div>
-    </div>
-
     <!-- ================= MODAL JOURNÉE (PROGRAMMATION D'UN JOUR) ================= -->
     <div class="modal" id="modal-view-day">
         <div class="modal-content">
@@ -2195,6 +2182,13 @@
             }
         }
 
+        let expandedDestinations = {};
+
+        function toggleDestinationExpand(progId) {
+            expandedDestinations[progId] = !expandedDestinations[progId];
+            renderProgramme();
+        }
+
         function addDayToDestination(progId) {
             const input = document.getElementById('new-day-date-' + progId);
             if (!input) return;
@@ -2208,7 +2202,7 @@
                 saveToLocalStorage();
             }
             input.value = '';
-            viewProgrammeDetails(progId);
+            renderDestinationDayBar(progId);
             viewProgrammeDay(progId, date);
         }
 
@@ -2219,91 +2213,54 @@
             prog.jours = (prog.jours || []).filter(d => d !== date);
             prog.activites = (prog.activites || []).filter(a => a.date !== date);
             saveToLocalStorage();
-            viewProgrammeDetails(progId);
+            renderDestinationDayBar(progId);
         }
 
-        function viewProgrammeDetails(id) {
-            const prog = appData.programme.find(p => p.id === id);
+        // Barre déroulante affichée directement dans la carte de la destination :
+        // liste des jours + ajout d'un jour + lien Maps, sans ouvrir de page.
+        function renderDestinationDayBar(progId) {
+            const container = document.getElementById('dest-expand-' + progId);
+            if (!container) return;
+            const prog = appData.programme.find(p => p.id === progId);
             if (!prog) return;
-
-            const dateRange = prog.dateStart === prog.dateEnd ? prog.dateStart : `${prog.dateStart} — ${prog.dateEnd}`;
-            document.getElementById('view-prog-title').innerText = `${prog.ville} — ${dateRange}`;
-
             if (!prog.jours) prog.jours = [];
             const jours = prog.jours.slice().sort();
 
             let joursHtml = '';
-            jours.forEach(date => {
-                const count = (prog.activites || []).filter(a => a.date === date).length;
-                joursHtml += `
-                    <div class="card clickable" style="padding: 14px 18px; margin-bottom: 10px; display:flex; justify-content:space-between; align-items:center;" onclick="viewProgrammeDay(${prog.id}, '${esc(date)}')">
-                        <div>
-                            <div style="font-weight: 800; font-size: 1.05rem;">${esc(date)}</div>
-                            <div style="font-size: 0.85rem; color: var(--text-muted); font-weight: 600;">${count} activité${count > 1 ? 's' : ''}</div>
-                        </div>
-                        <div style="display:flex; align-items:center; gap: 10px;">
-                            <i class="fa-solid fa-chevron-right" style="color:#ccc;"></i>
-                            <button onclick="event.stopPropagation(); deleteDay(${prog.id}, '${esc(date)}')" style="background:none; border:none; color:#ccc; cursor:pointer; font-size:0.9rem;"><i class="fa-solid fa-trash-can"></i></button>
-                        </div>
-                    </div>
-                `;
-            });
             if (jours.length === 0) {
-                joursHtml = `<p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 10px;">Aucune journée programmée pour l'instant.</p>`;
+                joursHtml = `<p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 8px;">Aucune journée programmée pour l'instant.</p>`;
+            } else {
+                joursHtml = `<div style="display:flex; flex-direction:column; gap:8px; margin-bottom: 10px;">`;
+                jours.forEach(date => {
+                    const count = (prog.activites || []).filter(a => a.date === date).length;
+                    joursHtml += `
+                        <div class="jour-checklist-item" style="cursor:pointer;" onclick="viewProgrammeDay(${prog.id}, '${esc(date)}')">
+                            <div style="flex:1;">
+                                <div style="font-weight: 700; font-size: 0.95rem;">${esc(date)}</div>
+                                <div style="font-size: 0.8rem; color: var(--text-muted);">${count} activité${count > 1 ? 's' : ''}</div>
+                            </div>
+                            <button onclick="event.stopPropagation(); deleteDay(${prog.id}, '${esc(date)}')" style="background:none; border:none; color:#ccc; cursor:pointer; font-size:0.9rem;"><i class="fa-solid fa-trash-can"></i></button>
+                            <i class="fa-solid fa-chevron-right" style="color:#ccc; font-size:0.85rem;"></i>
+                        </div>
+                    `;
+                });
+                joursHtml += `</div>`;
             }
 
             const progMapsUrl = safeUrl(prog.maps);
-            const mapsHtml = progMapsUrl ? `<a href="${progMapsUrl}" target="_blank" rel="noopener" style="display:inline-block; margin-top: 10px; color: var(--accent-green); font-weight: 600; font-size: 0.9rem;">📍 Voir sur Google Maps</a>` : '';
+            const mapsHtml = progMapsUrl ? `<a href="${progMapsUrl}" target="_blank" rel="noopener" style="display:inline-block; margin-top: 10px; color: var(--accent-green); font-weight: 600; font-size: 0.85rem;">📍 Voir sur Google Maps</a>` : '';
 
-            // Mini checklist embedded in the view
-            if (!appData.checklistsJour) appData.checklistsJour = {};
-            if (!appData.checklistsJour[prog.id]) appData.checklistsJour[prog.id] = [];
-            const jourItems = appData.checklistsJour[prog.id];
-            let jourCheckHtml = '';
-            jourItems.forEach(item => {
-                jourCheckHtml += `
-                    <div class="jour-checklist-item ${item.checked ? 'checked' : ''}" style="padding:6px 0; border-bottom: 1px solid #f0f0f0; display:flex; align-items:center; gap:8px;">
-                        <input type="checkbox" class="checkbox-round" ${item.checked ? 'checked' : ''} onclick="toggleCheckJour(${prog.id}, ${item.id})">
-                        <span class="checklist-label" style="flex:1; font-size:0.9rem;">${esc(item.texte)}</span>
-                        <button onclick="deleteItemJour(${prog.id}, ${item.id})" style="background:none; border:none; color:#ccc; cursor:pointer; font-size:0.8rem; padding:2px 4px;"><i class="fa-solid fa-xmark"></i></button>
-                    </div>
-                `;
-            });
-            const jourCount = jourItems.filter(i => i.checked).length;
-            const jourCheckSection = `
+            container.innerHTML = `
                 <div class="jour-checklist-section">
-                    <div class="jour-checklist-title" style="display:flex; justify-content:space-between; align-items:center;">
-                        <span>Checklist de la destination</span>
-                        <span style="font-weight:400; font-size:0.75rem; color: var(--accent-green);">${jourCount}/${jourItems.length}</span>
+                    <div class="jour-checklist-title">Journées</div>
+                    ${joursHtml}
+                    <div class="jour-checklist-add-row">
+                        <input type="text" id="new-day-date-${prog.id}" placeholder="Ajouter un jour (ex: 2 sept.)">
+                        <button onclick="addDayToDestination(${prog.id})">+</button>
                     </div>
-                    ${jourCheckHtml}
-                    <div class="jour-checklist-add-row" style="margin-top:8px;">
-                        <input type="text" id="jour-check-new-text" placeholder="Ajouter un élément...">
-                        <button onclick="addJourCheckItem(${prog.id})" style="padding:7px 14px; border:none; border-radius:8px; background:var(--accent-green); color:white; font-size:1rem; cursor:pointer; font-weight:700;">+</button>
-                    </div>
+                    ${mapsHtml}
                 </div>
             `;
-
-            document.getElementById('view-prog-details').innerHTML = `
-                <div class="card-subtitle" style="display:flex; align-items:center; gap: 8px; margin-bottom: 20px;">
-                    <i class="fa-solid fa-bed" style="color: #bbb;"></i> ${esc(prog.hotel)}
-                </div>
-                <h4 class="section-title" style="margin-top: 0;">Journées</h4>
-                ${joursHtml}
-                <div class="jour-checklist-add-row">
-                    <input type="text" id="new-day-date-${prog.id}" placeholder="Ajouter un jour (ex: 2 sept.)">
-                    <button onclick="addDayToDestination(${prog.id})">+</button>
-                </div>
-                ${mapsHtml}
-                ${jourCheckSection}
-            `;
-
-            document.getElementById('btn-trigger-edit-prog').onclick = function() {
-                closeModal('modal-view-programme');
-                openEditProgrammeModal(id);
-            };
-
-            openModal('modal-view-programme');
         }
 
         // --- Programmation d'une journée précise ---
@@ -2327,7 +2284,7 @@
                 document.getElementById('day-activite-texte').value = '';
                 document.getElementById('day-activite-lien').value = '';
                 renderDayActivites(progId, date);
-                viewProgrammeDetails(progId);
+                renderDestinationDayBar(progId);
             };
 
             openModal('modal-view-day');
@@ -2372,7 +2329,7 @@
             prog.activites = (prog.activites || []).filter(a => a.id !== activiteId);
             saveToLocalStorage();
             renderDayActivites(progId, date);
-            viewProgrammeDetails(progId);
+            renderDestinationDayBar(progId);
         }
 
         function renderProgramme() {
@@ -2381,21 +2338,31 @@
 
             appData.programme.forEach((prog, index) => {
                 const dateRange = prog.dateStart === prog.dateEnd ? esc(prog.dateStart) : `${esc(prog.dateStart)} — ${esc(prog.dateEnd)}`;
+                const isExpanded = !!expandedDestinations[prog.id];
                 list.innerHTML += `
                     <div class="timeline-item">
                         <div class="timeline-badge">${index + 1}</div>
-                        <div class="card clickable" onclick="viewProgrammeDetails(${prog.id})">
+                        <div class="card">
                             <button class="delete-btn-round" onclick="event.stopPropagation(); deleteItem('programme', ${prog.id})"><i class="fa-solid fa-trash-can"></i></button>
-                            <div class="card-header-row" style="margin-bottom: 5px;">
-                                <div class="card-title" style="font-size: 1.3rem;">${esc(prog.ville)}</div>
+                            <div class="card-header-row clickable" style="margin-bottom: 5px; cursor:pointer;" onclick="toggleDestinationExpand(${prog.id})">
+                                <div class="card-title-group" style="gap:8px;">
+                                    <div class="card-title" style="font-size: 1.3rem;">${esc(prog.ville)}</div>
+                                    <i class="fa-solid fa-chevron-${isExpanded ? 'up' : 'down'}" style="color:#ccc; font-size:0.85rem;"></i>
+                                </div>
                                 <span class="card-date">${dateRange}</span>
                             </div>
-                            <div class="card-subtitle" style="display:flex; align-items:center; gap: 8px;">
-                                <i class="fa-solid fa-bed" style="color: #bbb;"></i> ${esc(prog.hotel)}
+                            <div class="card-subtitle" style="display:flex; align-items:center; justify-content:space-between;">
+                                <span><i class="fa-solid fa-bed" style="color: #bbb;"></i> ${esc(prog.hotel)}</span>
+                                <button onclick="event.stopPropagation(); openEditProgrammeModal(${prog.id})" style="background:none; border:none; color:#bbb; cursor:pointer; font-size:0.95rem;"><i class="fa-solid fa-pen-to-square"></i></button>
                             </div>
+                            <div id="dest-expand-${prog.id}" style="display:${isExpanded ? 'block' : 'none'};"></div>
                         </div>
                     </div>
                 `;
+            });
+
+            appData.programme.forEach(prog => {
+                if (expandedDestinations[prog.id]) renderDestinationDayBar(prog.id);
             });
         }
 
