@@ -979,7 +979,7 @@
             <h2 class="section-title">Transports</h2>
             <div id="transports-list"></div>
         </div>
-        <button class="btn-add-float" onclick="openAddTransportModal()"><i class="fa-solid fa-train"></i></button>
+        <button class="btn-add-float" onclick="openModal('modal-choose-type')"><i class="fa-solid fa-plus"></i></button>
     </div>
 
     <!-- ================= PROGRAMME ================= -->
@@ -1130,9 +1130,13 @@
     <!-- ================= MODAL VOLS (MODIFICATION COMPLÈTE) ================= -->
     <div class="modal" id="modal-vol">
         <div class="modal-content">
-            <h3>Modifier le vol</h3>
+            <h3 id="vol-modal-title">Modifier le vol</h3>
             <input type="hidden" id="vol-edit-index" value="">
-            
+
+            <div class="input-group">
+                <label>Type de vol</label>
+                <input type="text" id="vol-type" placeholder="Ex: Aller, Retour, Vol interne">
+            </div>
             <div class="input-group">
                 <label>Compagnie Aérienne</label>
                 <input type="text" id="vol-compagnie">
@@ -1231,6 +1235,24 @@
             <div class="modal-buttons">
                 <button class="btn-modal cancel" onclick="closeModal('modal-vol')">Annuler</button>
                 <button class="btn-modal save" onclick="saveVol()">Enregistrer</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= MODAL CHOIX DU TYPE À AJOUTER ================= -->
+    <div class="modal" id="modal-choose-type">
+        <div class="modal-content">
+            <h3>Qu'est-ce que tu veux ajouter ?</h3>
+            <div class="modal-buttons" style="flex-direction: column; gap: 12px;">
+                <button class="btn-modal save" style="background-color: var(--accent-green); display:flex; align-items:center; justify-content:center; gap:10px;" onclick="closeModal('modal-choose-type'); openAddVolModal();">
+                    <i class="fa-solid fa-plane"></i> Un vol
+                </button>
+                <button class="btn-modal save" style="background-color: var(--accent-green); display:flex; align-items:center; justify-content:center; gap:10px;" onclick="closeModal('modal-choose-type'); openAddTransportModal();">
+                    <i class="fa-solid fa-train"></i> Un trajet en train
+                </button>
+            </div>
+            <div class="modal-buttons">
+                <button class="btn-modal cancel" onclick="closeModal('modal-choose-type')">Annuler</button>
             </div>
         </div>
     </div>
@@ -1773,10 +1795,22 @@
             openModal('modal-view-vol');
         }
 
+        function openAddVolModal() {
+            document.getElementById('vol-modal-title').innerText = "Ajouter un vol";
+            document.getElementById('vol-edit-index').value = "";
+            ['vol-type', 'vol-compagnie', 'vol-date', 'vol-dep', 'vol-dep-city', 'vol-dep-terminal', 'vol-dep-time',
+             'vol-num-1', 'vol-layover-code', 'vol-layover-duration', 'vol-arr', 'vol-arr-city', 'vol-arr-terminal',
+             'vol-arr-time', 'vol-num-2', 'vol-aircraft', 'vol-seats', 'vol-pnr', 'vol-ticket-link'
+            ].forEach(id => { document.getElementById(id).value = ''; });
+            openModal('modal-vol');
+        }
+
         function openEditVolModal(index) {
             const vol = appData.vols[index];
             if (vol) {
+                document.getElementById('vol-modal-title').innerText = "Modifier le vol";
                 document.getElementById('vol-edit-index').value = index;
+                document.getElementById('vol-type').value = vol.type || '';
                 document.getElementById('vol-compagnie').value = vol.compagnie || '';
                 document.getElementById('vol-date').value = vol.date || '';
                 
@@ -1806,34 +1840,50 @@
 
         function saveVol() {
             const index = document.getElementById('vol-edit-index').value;
+            const volData = {
+                type: document.getElementById('vol-type').value,
+                compagnie: document.getElementById('vol-compagnie').value,
+                date: document.getElementById('vol-date').value,
+
+                dep: document.getElementById('vol-dep').value,
+                depCity: document.getElementById('vol-dep-city').value,
+                depTerminal: document.getElementById('vol-dep-terminal').value,
+                depTime: document.getElementById('vol-dep-time').value,
+                num1: document.getElementById('vol-num-1').value,
+
+                layoverCode: document.getElementById('vol-layover-code').value,
+                layoverDuration: document.getElementById('vol-layover-duration').value,
+
+                arr: document.getElementById('vol-arr').value,
+                arrCity: document.getElementById('vol-arr-city').value,
+                arrTerminal: document.getElementById('vol-arr-terminal').value,
+                arrTime: document.getElementById('vol-arr-time').value,
+                num2: document.getElementById('vol-num-2').value,
+
+                aircraft: document.getElementById('vol-aircraft').value,
+                seats: document.getElementById('vol-seats').value,
+                pnr: document.getElementById('vol-pnr').value,
+                ticketLink: document.getElementById('vol-ticket-link').value
+            };
+
+            if (!volData.date || !volData.dep || !volData.arr) return;
+
             if (index !== "") {
-                const i = parseInt(index);
-                appData.vols[i].compagnie = document.getElementById('vol-compagnie').value;
-                appData.vols[i].date = document.getElementById('vol-date').value;
-                
-                appData.vols[i].dep = document.getElementById('vol-dep').value;
-                appData.vols[i].depCity = document.getElementById('vol-dep-city').value;
-                appData.vols[i].depTerminal = document.getElementById('vol-dep-terminal').value;
-                appData.vols[i].depTime = document.getElementById('vol-dep-time').value;
-                appData.vols[i].num1 = document.getElementById('vol-num-1').value;
+                appData.vols[parseInt(index)] = volData;
+            } else {
+                appData.vols.push(volData);
+            }
 
-                appData.vols[i].layoverCode = document.getElementById('vol-layover-code').value;
-                appData.vols[i].layoverDuration = document.getElementById('vol-layover-duration').value;
+            saveToLocalStorage();
+            renderVols();
+            closeModal('modal-vol');
+        }
 
-                appData.vols[i].arr = document.getElementById('vol-arr').value;
-                appData.vols[i].arrCity = document.getElementById('vol-arr-city').value;
-                appData.vols[i].arrTerminal = document.getElementById('vol-arr-terminal').value;
-                appData.vols[i].arrTime = document.getElementById('vol-arr-time').value;
-                appData.vols[i].num2 = document.getElementById('vol-num-2').value;
-
-                appData.vols[i].aircraft = document.getElementById('vol-aircraft').value;
-                appData.vols[i].seats = document.getElementById('vol-seats').value;
-                appData.vols[i].pnr = document.getElementById('vol-pnr').value;
-                appData.vols[i].ticketLink = document.getElementById('vol-ticket-link').value;
-
+        function deleteVol(index) {
+            if (confirm("Voulez-vous vraiment supprimer ce vol ?")) {
+                appData.vols.splice(index, 1);
                 saveToLocalStorage();
                 renderVols();
-                closeModal('modal-vol');
             }
         }
 
@@ -1843,6 +1893,7 @@
             appData.vols.forEach((vol, index) => {
                 list.innerHTML += `
                     <div class="card clickable" onclick="viewVolDetails(${index})">
+                        <button class="delete-btn-round" onclick="event.stopPropagation(); deleteVol(${index})"><i class="fa-solid fa-trash-can"></i></button>
                         <div class="card-header-row">
                             <div class="card-title-group">
                                 <div class="card-icon"><i class="fa-solid fa-plane"></i></div>
