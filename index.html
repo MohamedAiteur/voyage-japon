@@ -972,17 +972,6 @@
             </div>
         </div>
 
-                <!-- ================= SECTION TRANSPORTS ================= -->
-                <div class="section-header">
-                    <h2>🚄 Transports</h2>
-                </div>
-                <div id="transports-list" class="content-container">
-                    <!-- Rempli dynamiquement -->
-                </div>
-                <button class="btn-add-float" onclick="openAddTransportModal()" style="bottom: 180px;">
-                    <i class="fa-solid fa-plus"></i>
-                </button>
-
         <div class="content-container" style="margin-top: 20px;">
             <h2 class="section-title">Vols</h2>
             <div id="vols-list"></div>
@@ -1242,87 +1231,6 @@
         </div>
     </div>
 
-    <!-- ================= MODAL APERÇU DÉTAILLÉ DU TRANSPORT ================= -->
-    <div class="modal" id="modal-view-transport">
-        <div class="modal-content">
-            <h3 id="view-transport-title">Fiche de Transport</h3>
-            <div id="view-transport-details">
-                <!-- Rempli dynamiquement -->
-            </div>
-            <div class="modal-buttons">
-                <button class="btn-modal cancel" onclick="closeModal('modal-view-transport')">Fermer</button>
-                <button class="btn-modal save" id="btn-trigger-edit-transport" style="background-color: var(--accent-green); color: white;">Modifier</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- ================= MODAL TRANSPORTS (MODIFICATION COMPLÈTE) ================= -->
-    <div class="modal" id="modal-transport">
-        <div class="modal-content">
-            <h3>Ajouter/Modifier un Transport</h3>
-            <input type="hidden" id="transport-edit-index" value="">
-            
-            <div class="input-group">
-                <label>Type de Transport</label>
-                <select id="transport-type">
-                    <option value="">-- Sélectionne --</option>
-                    <option value="Shinkansen">🚄 Shinkansen (Japon)</option>
-                    <option value="Train">🚂 Train régional</option>
-                    <option value="Bus">🚌 Bus</option>
-                    <option value="Ferry">⛴️ Ferry</option>
-                    <option value="Voiture">🚗 Location voiture</option>
-                </select>
-            </div>
-
-            <div style="display: flex; gap: 10px;">
-                <div class="input-group" style="flex: 1;">
-                    <label>De (Départ)</label>
-                    <input type="text" id="transport-depart" placeholder="Ex: Kyoto">
-                </div>
-                <div class="input-group" style="flex: 1;">
-                    <label>Vers (Arrivée)</label>
-                    <input type="text" id="transport-arrivee" placeholder="Ex: Tokyo">
-                </div>
-            </div>
-
-            <div style="display: flex; gap: 10px;">
-                <div class="input-group" style="flex: 1;">
-                    <label>Date</label>
-                    <input type="text" id="transport-date" placeholder="Ex: 7 sept. 2026">
-                </div>
-                <div class="input-group" style="flex: 0.8;">
-                    <label>Départ</label>
-                    <input type="time" id="transport-heure">
-                </div>
-                <div class="input-group" style="flex: 0.8;">
-                    <label>Arrivée</label>
-                    <input type="time" id="transport-heure-arr">
-                </div>
-            </div>
-
-            <div style="display: flex; gap: 10px;">
-                <div class="input-group" style="flex: 1;">
-                    <label>N° Réservation</label>
-                    <input type="text" id="transport-numero" placeholder="Ex: TR-KYO-001">
-                </div>
-                <div class="input-group" style="flex: 1;">
-                    <label>Prix (€)</label>
-                    <input type="number" id="transport-prix" placeholder="120">
-                </div>
-            </div>
-
-            <div class="input-group">
-                <label>Notes</label>
-                <textarea id="transport-notes" placeholder="Infos supplémentaires..." style="min-height: 80px;"></textarea>
-            </div>
-
-            <div class="modal-buttons">
-                <button class="btn-modal cancel" onclick="closeModal('modal-transport')">Annuler</button>
-                <button class="btn-modal save" onclick="saveTransport()">Enregistrer</button>
-            </div>
-        </div>
-    </div>
-    
     <!-- ================= MODAL APERÇU ITINÉRAIRE (VISUALISATION) ================= -->
     <div class="modal" id="modal-view-programme">
         <div class="modal-content">
@@ -1524,13 +1432,7 @@
             ]
         };
 
-       var appData = JSON.parse(localStorage.getItem('voyage_japon_data')) || defaultData;
-
-        // Crée les tableaux manquants s'ils n'existent pas
-        if (!appData.transports) appData.transports = [];
-        if (!appData.infos) appData.infos = defaultData.infos;
-        if (!appData.checklist) appData.checklist = defaultData.checklist;
-        if (!appData.budget) appData.budget = defaultData.budget;
+        var appData = JSON.parse(localStorage.getItem('voyage_japon_data')) || defaultData;
 
         // Rétrocompatibilité si d'anciennes données sans dates globales existent
         if (!appData.tripTitle) appData.tripTitle = defaultData.tripTitle;
@@ -1549,7 +1451,6 @@
             updateChecklistAddFloat();
             updateCountdown();
             renderVols();
-            renderTransports();
             renderProgramme();
             renderChecklist();
             updateBudgetUI();
@@ -1695,188 +1596,174 @@
             document.getElementById(modalId).classList.add('active');
         }
 
-      // --- APERÇU ET EDITION DES TRANSPORTS ---
-function viewTransportDetails(index) {
-    const transport = appData.transports[index];
-    if (!transport) return;
+        // --- APERÇU ET EDITION DES VOLS ---
+        function viewVolDetails(index) {
+            const vol = appData.vols[index];
+            if (!vol) return;
 
-    document.getElementById('view-transport-title').innerText = `${transport.type} — ${transport.depart} → ${transport.arrivee}`;
-    
-    const duration = transport.heure && transport.heure_arr 
-        ? `${transport.heure} → ${transport.heure_arr}` 
-        : 'N/A';
+            document.getElementById('view-vol-title').innerText = `Vol ${vol.type} — ${vol.compagnie}`;
+            
+            const pnrHtml = vol.pnr ? `<div class="flight-meta-pill"><span>Réservation (PNR)</span><span>${vol.pnr}</span></div>` : '';
+            const seatsHtml = vol.seats ? `<div class="flight-meta-pill"><span>Siège(s)</span><span>${vol.seats}</span></div>` : '';
+            const ticketHtml = vol.ticketLink ? `<div class="flight-meta-pill"><span>Billet Électronique</span><span><a href="${vol.ticketLink}" target="_blank" style="color: var(--accent-green); text-decoration: underline;">Ouvrir</a></span></div>` : '';
 
-    let detailsHtml = `
-        <div style="margin-bottom: 20px; font-weight: 600; color: var(--text-muted); font-size: 0.9rem;">
-            Date : ${transport.date}
-        </div>
-
-        <!-- TRAJET PRINCIPAL -->
-        <div class="flight-detail-segment">
-            <div class="segment-dot"></div>
-            <div style="font-weight: 800; font-size: 1.1rem; display: flex; justify-content: space-between;">
-                <span>${transport.depart}</span>
-                <span style="color: var(--accent-green);">${transport.heure || '—'}</span>
-            </div>
-            <div style="font-size: 0.85rem; color: var(--text-muted); font-weight: 600; margin-top: 2px;">
-                Départ
-            </div>
-        </div>
-
-        <!-- ARRIVÉE -->
-        <div class="flight-detail-segment">
-            <div class="segment-dot"></div>
-            <div style="font-weight: 800; font-size: 1.1rem; display: flex; justify-content: space-between;">
-                <span>${transport.arrivee}</span>
-                <span style="color: var(--accent-green);">${transport.heure_arr || '—'}</span>
-            </div>
-            <div style="font-size: 0.85rem; color: var(--text-muted); font-weight: 600; margin-top: 2px;">
-                Arrivée
-            </div>
-        </div>
-
-        <h4 class="section-title" style="margin-top: 25px;">Infos Pratiques</h4>
-        <div class="flight-meta-pill"><span>Type</span><span>${transport.type}</span></div>
-        <div class="flight-meta-pill"><span>N° Réservation</span><span>${transport.numero || 'N/A'}</span></div>
-        <div class="flight-meta-pill"><span>Prix</span><span style="color: var(--accent-green);">${transport.prix_eur}€</span></div>
-        ${transport.notes ? `<div class="flight-meta-pill"><span>Notes</span><span>${transport.notes}</span></div>` : ''}
-    `;
-
-    document.getElementById('view-transport-details').innerHTML = detailsHtml;
-
-    // Associe le bouton "Modifier" du visualiseur à l'édition réelle
-    document.getElementById('btn-trigger-edit-transport').onclick = function() {
-        closeModal('modal-view-transport');
-        openEditTransportModal(index);
-    };
-
-    openModal('modal-view-transport');
-}
-
-function openEditTransportModal(index) {
-    const transport = appData.transports[index];
-    if (transport) {
-        document.getElementById('transport-edit-index').value = index;
-        document.getElementById('transport-type').value = transport.type || '';
-        document.getElementById('transport-depart').value = transport.depart || '';
-        document.getElementById('transport-arrivee').value = transport.arrivee || '';
-        document.getElementById('transport-date').value = transport.date || '';
-        document.getElementById('transport-heure').value = transport.heure || '';
-        document.getElementById('transport-heure-arr').value = transport.heure_arr || '';
-        document.getElementById('transport-numero').value = transport.numero || '';
-        document.getElementById('transport-prix').value = transport.prix_eur || '';
-        document.getElementById('transport-notes').value = transport.notes || '';
-
-        openModal('modal-transport');
-    }
-}
-
-function saveTransport() {
-    const index = document.getElementById('transport-edit-index').value;
-    const type = document.getElementById('transport-type').value;
-    const depart = document.getElementById('transport-depart').value;
-    const arrivee = document.getElementById('transport-arrivee').value;
-    const date = document.getElementById('transport-date').value;
-    const heure = document.getElementById('transport-heure').value;
-    const heure_arr = document.getElementById('transport-heure-arr').value;
-    const numero = document.getElementById('transport-numero').value;
-    const prix = parseFloat(document.getElementById('transport-prix').value) || 0;
-    const notes = document.getElementById('transport-notes').value;
-
-    if (!type || !depart || !arrivee || !date) {
-        alert('Remplis au moins: Type, Départ, Arrivée, Date');
-        return;
-    }
-
-    if (index !== "") {
-        // Modification
-        const i = parseInt(index);
-        appData.transports[i].type = type;
-        appData.transports[i].depart = depart;
-        appData.transports[i].arrivee = arrivee;
-        appData.transports[i].date = date;
-        appData.transports[i].heure = heure;
-        appData.transports[i].heure_arr = heure_arr;
-        appData.transports[i].numero = numero;
-        appData.transports[i].prix_eur = prix;
-        appData.transports[i].notes = notes;
-    } else {
-        // Création
-        const newId = appData.transports.length > 0 
-            ? Math.max(...appData.transports.map(t => t.id)) + 1 
-            : 1;
-        appData.transports.push({
-            id: newId,
-            type, depart, arrivee, date, heure, heure_arr, numero, prix_eur: prix, notes
-        });
-    }
-
-    saveToLocalStorage();
-    renderTransports();
-    closeModal('modal-transport');
-}
-
-function renderTransports() {
-    const list = document.getElementById('transports-list');
-    if (!list) return;
-} 
-
-    
-function deleteItem(type, index) {
-    if (confirm("Supprimer cet élément ?")) {
-        appData[type].splice(index, 1);
-        saveToLocalStorage();
-        refreshAllUI();
-    }
-}
-
-    list.innerHTML = '';
-    appData.transports.forEach((transport, index) => {
-        const duration = transport.heure && transport.heure_arr 
-            ? `${transport.heure} → ${transport.heure_arr}` 
-            : '';
-
-        list.innerHTML += `
-    <div class="card clickable" onclick="viewTransportDetails(${index})">
-        <button class="delete-btn-round" onclick="event.stopPropagation(); deleteItem('transports', ${index})"><i class="fa-solid fa-trash-can"></i></button>
-        <div class="card-header-row">
-                    <div class="card-title-group">
-                        <div class="card-icon"><i class="fa-solid fa-train"></i></div>
-                        <div>
-                            <div class="card-title">${transport.type}</div>
-                            <div class="card-subtitle" style="font-weight: 700; color: var(--accent-green);">${transport.depart} → ${transport.arrivee}</div>
-                        </div>
-                    </div>
-                    <span class="card-date">${transport.date}</span>
+            let detailsHtml = `
+                <div style="margin-bottom: 20px; font-weight: 600; color: var(--text-muted); font-size: 0.9rem;">
+                    Date : ${vol.date}
                 </div>
-                <div style="display: flex; gap: 15px; margin-top: 12px; align-items: center;">
-                    <div style="flex: 1;">
-                        <div style="font-size: 0.85rem; color: var(--text-muted);">
-                            ${duration}
-                        </div>
-                        <div style="font-weight: 600; color: var(--accent-green); margin-top: 4px;">
-                            💰 ${transport.prix_eur}€
-                        </div>
+
+                <!-- SEGMENT 1 -->
+                <div class="flight-detail-segment">
+                    <div class="segment-dot"></div>
+                    <div style="font-weight: 800; font-size: 1.1rem; display: flex; justify-content: space-between;">
+                        <span>${vol.depCity} (${vol.dep})</span>
+                        <span style="color: var(--accent-green);">${vol.depTime || ''}</span>
+                    </div>
+                    <div style="font-size: 0.85rem; color: var(--text-muted); font-weight: 600; margin-top: 2px;">
+                        ${vol.depTerminal || ''} • Vol ${vol.num1 || ''}
                     </div>
                 </div>
-            </div>
-        `;
-    });
-}
+            `;
 
-function openAddTransportModal() {
-    document.getElementById('transport-edit-index').value = '';
-    document.getElementById('transport-type').value = '';
-    document.getElementById('transport-depart').value = '';
-    document.getElementById('transport-arrivee').value = '';
-    document.getElementById('transport-date').value = '';
-    document.getElementById('transport-heure').value = '';
-    document.getElementById('transport-heure-arr').value = '';
-    document.getElementById('transport-numero').value = '';
-    document.getElementById('transport-prix').value = '';
-    document.getElementById('transport-notes').value = '';
-    openModal('modal-transport');
-}
+            if (vol.layoverCode) {
+                detailsHtml += `
+                    <!-- ESCALE -->
+                    <div class="layover-card">
+                        <i class="fa-solid fa-clock"></i>
+                        <span>Escale à ${vol.layoverCode} (${vol.layoverDuration || ''})</span>
+                    </div>
+
+                    <!-- SEGMENT 2 -->
+                    <div class="flight-detail-segment">
+                        <div class="segment-dot"></div>
+                        <div style="font-weight: 800; font-size: 1.1rem; display: flex; justify-content: space-between;">
+                            <span>${vol.arrCity} (${vol.arr})</span>
+                            <span style="color: var(--accent-green);">${vol.arrTime || ''}</span>
+                        </div>
+                        <div style="font-size: 0.85rem; color: var(--text-muted); font-weight: 600; margin-top: 2px;">
+                            ${vol.arrTerminal || ''} • Vol ${vol.num2 || ''}
+                        </div>
+                    </div>
+                `;
+            }
+
+            detailsHtml += `
+                <h4 class="section-title" style="margin-top: 25px;">Infos Logistiques</h4>
+                <div class="flight-meta-pill"><span>Appareils</span><span>${vol.aircraft || 'Non renseigné'}</span></div>
+                ${pnrHtml}
+                ${seatsHtml}
+                ${ticketHtml}
+            `;
+
+            document.getElementById('view-vol-details').innerHTML = detailsHtml;
+
+            // Associe le bouton "Modifier" du visualiseur à l'édition réelle
+            document.getElementById('btn-trigger-edit-vol').onclick = function() {
+                closeModal('modal-view-vol');
+                openEditVolModal(index);
+            };
+
+            openModal('modal-view-vol');
+        }
+
+        function openEditVolModal(index) {
+            const vol = appData.vols[index];
+            if (vol) {
+                document.getElementById('vol-edit-index').value = index;
+                document.getElementById('vol-compagnie').value = vol.compagnie || '';
+                document.getElementById('vol-date').value = vol.date || '';
+                
+                document.getElementById('vol-dep').value = vol.dep || '';
+                document.getElementById('vol-dep-city').value = vol.depCity || '';
+                document.getElementById('vol-dep-terminal').value = vol.depTerminal || '';
+                document.getElementById('vol-dep-time').value = vol.depTime || '';
+                document.getElementById('vol-num-1').value = vol.num1 || '';
+
+                document.getElementById('vol-layover-code').value = vol.layoverCode || '';
+                document.getElementById('vol-layover-duration').value = vol.layoverDuration || '';
+
+                document.getElementById('vol-arr').value = vol.arr || '';
+                document.getElementById('vol-arr-city').value = vol.arrCity || '';
+                document.getElementById('vol-arr-terminal').value = vol.arrTerminal || '';
+                document.getElementById('vol-arr-time').value = vol.arrTime || '';
+                document.getElementById('vol-num-2').value = vol.num2 || '';
+
+                document.getElementById('vol-aircraft').value = vol.aircraft || '';
+                document.getElementById('vol-seats').value = vol.seats || '';
+                document.getElementById('vol-pnr').value = vol.pnr || '';
+                document.getElementById('vol-ticket-link').value = vol.ticketLink || '';
+
+                openModal('modal-vol');
+            }
+        }
+
+        function saveVol() {
+            const index = document.getElementById('vol-edit-index').value;
+            if (index !== "") {
+                const i = parseInt(index);
+                appData.vols[i].compagnie = document.getElementById('vol-compagnie').value;
+                appData.vols[i].date = document.getElementById('vol-date').value;
+                
+                appData.vols[i].dep = document.getElementById('vol-dep').value;
+                appData.vols[i].depCity = document.getElementById('vol-dep-city').value;
+                appData.vols[i].depTerminal = document.getElementById('vol-dep-terminal').value;
+                appData.vols[i].depTime = document.getElementById('vol-dep-time').value;
+                appData.vols[i].num1 = document.getElementById('vol-num-1').value;
+
+                appData.vols[i].layoverCode = document.getElementById('vol-layover-code').value;
+                appData.vols[i].layoverDuration = document.getElementById('vol-layover-duration').value;
+
+                appData.vols[i].arr = document.getElementById('vol-arr').value;
+                appData.vols[i].arrCity = document.getElementById('vol-arr-city').value;
+                appData.vols[i].arrTerminal = document.getElementById('vol-arr-terminal').value;
+                appData.vols[i].arrTime = document.getElementById('vol-arr-time').value;
+                appData.vols[i].num2 = document.getElementById('vol-num-2').value;
+
+                appData.vols[i].aircraft = document.getElementById('vol-aircraft').value;
+                appData.vols[i].seats = document.getElementById('vol-seats').value;
+                appData.vols[i].pnr = document.getElementById('vol-pnr').value;
+                appData.vols[i].ticketLink = document.getElementById('vol-ticket-link').value;
+
+                saveToLocalStorage();
+                renderVols();
+                closeModal('modal-vol');
+            }
+        }
+
+        function renderVols() {
+            const list = document.getElementById('vols-list');
+            list.innerHTML = '';
+            appData.vols.forEach((vol, index) => {
+                list.innerHTML += `
+                    <div class="card clickable" onclick="viewVolDetails(${index})">
+                        <div class="card-header-row">
+                            <div class="card-title-group">
+                                <div class="card-icon"><i class="fa-solid fa-plane"></i></div>
+                                <div>
+                                    <div class="card-title">${vol.type} — ${vol.compagnie}</div>
+                                    <div class="card-subtitle" style="font-weight: 700; color: var(--accent-green);">${vol.num1} ${vol.num2 ? ' & ' + vol.num2 : ''}</div>
+                                </div>
+                            </div>
+                            <span class="card-date">${vol.date}</span>
+                        </div>
+                        <div class="flight-route">
+                            <div class="flight-airport">
+                                <div class="airport-code">${vol.dep}</div>
+                                <div class="airport-city">${vol.depCity}</div>
+                            </div>
+                            <div class="flight-line-container">
+                                <div class="flight-line"></div>
+                                <i class="fa-solid fa-plane flight-icon-center"></i>
+                            </div>
+                            <div class="flight-airport right">
+                                <div class="airport-code">${vol.arr}</div>
+                                <div class="airport-city">${vol.arrCity}</div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+        }
 
 // --- PROGRAMME ---
         let tempActivites = [];
@@ -2029,7 +1916,7 @@ function openAddTransportModal() {
                     <div class="timeline-item">
                         <div class="timeline-badge">${index + 1}</div>
                         <div class="card clickable" onclick="viewProgrammeDetails(${prog.id})">
-                            <button class="delete-btn-round" onclick="event.stopPropagation(); deleteItem('programme', ${index})"><i class="fa-solid fa-trash-can"></i></button>
+                            <button class="delete-btn-round" onclick="event.stopPropagation(); deleteItem('programme', ${prog.id})"><i class="fa-solid fa-trash-can"></i></button>
                             <div class="card-header-row" style="margin-bottom: 5px;">
                                 <div class="card-title" style="font-size: 1.3rem;">${prog.ville}</div>
                                 <span class="card-date">${prog.date}</span>
