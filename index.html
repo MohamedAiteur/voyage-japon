@@ -10,30 +10,32 @@
     <link rel="apple-touch-icon" href="https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?q=80&w=180&auto=format&fit=crop">
     
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho+B1:wght@500;600;800&family=Noto+Sans+JP:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-
+    
     <style>
         :root {
-            --bg-color: #faf7f2;
+            --bg-color: #f7f7f7;
             --card-bg: #ffffff;
-            --text-main: #2b241f;
-            --text-muted: #8c7f78;
+            --text-main: #1a1a1a;
+            --text-muted: #757575;
             --accent: #e60012;
-            --accent-green: #6b8f5a;
-            --sakura: #e6a4b4;
-            --sakura-pale: #f6dfe4;
+            --accent-primary: #7d9385;
             --border-radius: 20px;
-            --font-jp: 'Shippori Mincho B1', serif;
-            --font-body: 'Noto Sans JP', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            --sakura: #ec8fac;
         }
+
+        /* Chaque page a son propre accent et sa propre teinte de carte,
+           assortis à sa photo, plutôt qu'un vert unique et du blanc pur */
+        #page-accueil { --accent-primary: #d9678a; --card-bg: #fff6f8; }
+        #page-programme { --accent-primary: #d9784f; --card-bg: #fff8f3; }
+        #page-budget { --accent-primary: #c94a1f; --card-bg: #fff5f0; }
+        #page-checklist { --accent-primary: #b8802c; --card-bg: #fdf8ef; }
+        #page-infos { --accent-primary: #e0468a; --card-bg: #f9f3fa; }
 
         * {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
-            font-family: var(--font-body);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             -webkit-tap-highlight-color: transparent;
         }
 
@@ -48,7 +50,7 @@
         .home-header {
             position: relative;
             height: 380px;
-            background: url('https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?q=80&w=1000&auto=format&fit=crop') center/cover no-repeat;
+            background: url('images/hero-sakura-pagoda.webp') center/cover no-repeat;
             display: flex;
             flex-direction: column;
             justify-content: flex-end;
@@ -60,19 +62,7 @@
             content: '';
             position: absolute;
             top: 0; left: 0; right: 0; bottom: 0;
-            background: linear-gradient(to bottom, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0.5) 60%, var(--bg-color) 100%);
-        }
-
-        .home-header::after {
-            content: '';
-            position: absolute;
-            top: 0; right: 0;
-            width: 150px;
-            height: 150px;
-            opacity: 0.55;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 150 150'%3E%3Cpath d='M148 2C120 20 95 40 78 68' stroke='%23ffffff' stroke-width='1.5' fill='none' opacity='0.6'/%3E%3Cpath d='M120 14C110 24 100 36 92 50' stroke='%23ffffff' stroke-width='1' fill='none' opacity='0.4'/%3E%3Cg fill='%23f6dfe4'%3E%3Cellipse cx='95' cy='30' rx='6' ry='9' transform='rotate(20 95 30)'/%3E%3Cellipse cx='108' cy='24' rx='6' ry='9' transform='rotate(-10 108 24)'/%3E%3Cellipse cx='120' cy='34' rx='6' ry='9' transform='rotate(55 120 34)'/%3E%3C/g%3E%3Cg fill='%23ffffff' opacity='0.85'%3E%3Cellipse cx='68' cy='58' rx='5' ry='7' transform='rotate(30 68 58)'/%3E%3Cellipse cx='78' cy='50' rx='5' ry='7' transform='rotate(-15 78 50)'/%3E%3C/g%3E%3C/svg%3E");
-            background-repeat: no-repeat;
-            pointer-events: none;
+            background: linear-gradient(to bottom, rgba(0,0,0,0.05) 0%, rgba(0,0,0,0.45) 65%, var(--bg-color) 100%);
         }
 
         .home-header-content {
@@ -80,11 +70,39 @@
             z-index: 1;
         }
 
+        .sakura-container {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            pointer-events: none;
+            overflow: hidden;
+            z-index: 0;
+        }
+
+        .sakura-petal {
+            position: absolute;
+            top: -20px;
+            width: 11px;
+            height: 11px;
+            background: linear-gradient(135deg, #ffe1ea, var(--sakura));
+            border-radius: 0% 70% 0% 70%;
+            opacity: 0;
+            animation: sakura-fall linear infinite;
+        }
+
+        @keyframes sakura-fall {
+            0% { transform: translateY(-20px) translateX(0) rotate(0deg); opacity: 0; }
+            10% { opacity: 0.75; }
+            85% { opacity: 0.5; }
+            100% { transform: translateY(480px) translateX(var(--drift, 30px)) rotate(300deg); opacity: 0; }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .sakura-container { display: none; }
+        }
+
         .japan-label {
-            font-family: var(--font-jp);
-            font-size: 1.6rem;
-            font-weight: 600;
-            letter-spacing: 2px;
+            font-size: 1.5rem;
+            font-weight: 700;
             margin-bottom: 5px;
         }
 
@@ -118,9 +136,8 @@
         }
 
         .trip-title {
-            font-family: var(--font-jp);
-            font-size: 1.5rem;
-            font-weight: 600;
+            font-size: 1.6rem;
+            font-weight: 800;
             margin-bottom: 5px;
             display: flex;
             align-items: center;
@@ -137,29 +154,67 @@
         }
 
         .page-header {
-            padding: 30px 20px 18px 20px;
+            padding: 24px 20px 16px 20px;
             background-color: var(--bg-color);
+            position: relative;
+            overflow: hidden;
+            min-height: 108px;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+        }
+
+        .page-header > * {
+            position: relative;
+            z-index: 1;
+        }
+
+        /* --- Chaque page a sa propre photo, avec un dégradé pour la lisibilité du titre --- */
+        #page-programme .page-header,
+        #page-budget .page-header,
+        #page-checklist .page-header,
+        #page-infos .page-header {
+            min-height: 190px;
+        }
+
+        #page-programme .page-header { background: #dbe7ef url('images/fuji-sakura.webp') center 30%/cover no-repeat; }
+        #page-budget .page-header { background: #16324a url('images/fushimi-inari.webp') center/cover no-repeat; }
+        #page-checklist .page-header { background: #3a2c22 url('images/gion-lanterns.webp') center/cover no-repeat; }
+        #page-infos .page-header { background: #0f0c1a url('images/tokyo-night.webp') center/cover no-repeat; }
+
+        #page-programme .page-header::before,
+        #page-budget .page-header::before,
+        #page-checklist .page-header::before,
+        #page-infos .page-header::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(180deg, rgba(0,0,0,0.05) 0%, rgba(0,0,0,0.45) 65%, var(--bg-color) 100%);
+        }
+
+        #page-infos .page-header h1,
+        #page-infos .page-header p,
+        #page-programme .page-header h1,
+        #page-programme .page-header p,
+        #page-budget .page-header h1,
+        #page-budget .page-header p,
+        #page-checklist .page-header h1,
+        #page-checklist .page-header p {
+            color: #ffffff;
+            text-shadow: 0 1px 6px rgba(0,0,0,0.35);
+        }
+
+        #page-infos .page-header p,
+        #page-programme .page-header p,
+        #page-budget .page-header p,
+        #page-checklist .page-header p {
+            color: rgba(255,255,255,0.85);
         }
 
         .page-header h1 {
-            font-family: var(--font-jp);
-            font-size: 2rem;
-            font-weight: 600;
+            font-size: 2.1rem;
+            font-weight: 800;
             color: var(--text-main);
-            position: relative;
-            display: inline-block;
-            padding-bottom: 10px;
-        }
-
-        .page-header h1::after {
-            content: '';
-            position: absolute;
-            left: 0;
-            bottom: 0;
-            width: 44px;
-            height: 3px;
-            border-radius: 3px;
-            background: linear-gradient(90deg, var(--accent), var(--sakura-pale));
         }
 
         .page-header p {
@@ -172,6 +227,11 @@
         .page {
             display: none;
             animation: fadeIn 0.3s ease-in-out;
+        }
+
+        #page-accueil {
+            position: relative;
+            overflow: hidden;
         }
 
         .page.active {
@@ -189,7 +249,6 @@
 
         .card {
             background-color: var(--card-bg);
-            border: 1px solid #f1e9e4;
             border-radius: var(--border-radius);
             padding: 18px;
             margin-bottom: 16px;
@@ -306,7 +365,7 @@
         .activity-time {
             font-weight: 800;
             font-size: 0.9rem;
-            color: var(--accent-green);
+            color: var(--accent-primary);
             min-width: 48px;
         }
 
@@ -403,7 +462,7 @@
             top: 6px;
             bottom: -20px;
             width: 2px;
-            background: repeating-linear-gradient(to bottom, var(--accent-green), var(--accent-green) 4px, transparent 4px, transparent 8px);
+            background: repeating-linear-gradient(to bottom, #7d9385, #7d9385 4px, transparent 4px, transparent 8px);
         }
 
         .flight-detail-segment:last-child::before {
@@ -417,9 +476,9 @@
             width: 12px;
             height: 12px;
             border-radius: 50%;
-            background-color: var(--accent-green);
+            background-color: var(--accent-primary);
             border: 2px solid white;
-            box-shadow: 0 0 0 2px var(--accent-green);
+            box-shadow: 0 0 0 2px var(--accent-primary);
         }
 
         .layover-card {
@@ -483,7 +542,7 @@
             width: 24px;
             height: 24px;
             border-radius: 50%;
-            background-color: var(--accent-green);
+            background-color: var(--accent-primary);
             color: white;
             display: flex;
             align-items: center;
@@ -496,7 +555,7 @@
         .details-link {
             display: inline-block;
             margin-top: 10px;
-            color: var(--accent-green);
+            color: var(--accent-primary);
             font-size: 0.9rem;
             font-weight: 600;
             text-decoration: none;
@@ -512,18 +571,6 @@
             letter-spacing: 1px;
             margin: 15px 0 10px 5px;
             text-transform: uppercase;
-            display: flex;
-            align-items: center;
-            gap: 7px;
-        }
-
-        .section-title::before {
-            content: '';
-            width: 6px;
-            height: 6px;
-            border-radius: 50%;
-            background: var(--sakura);
-            flex-shrink: 0;
         }
 
         .checklist-item {
@@ -555,8 +602,8 @@
         }
 
         .checkbox-round:checked {
-            background-color: var(--accent-green);
-            border-color: var(--accent-green);
+            background-color: var(--accent-primary);
+            border-color: var(--accent-primary);
         }
 
         .checkbox-round:checked::after {
@@ -635,7 +682,7 @@
         }
 
         .screen-row.active .screen-label {
-            color: var(--accent-green);
+            color: var(--accent-primary);
         }
 
         .screen-label {
@@ -740,7 +787,7 @@
             width: 56px;
             height: 56px;
             border-radius: 50%;
-            background-color: var(--accent-green);
+            background-color: var(--accent-primary);
             color: white;
             border: none;
             display: flex;
@@ -775,7 +822,7 @@
         }
 
         .btn-sync.export {
-            background-color: var(--accent-green);
+            background-color: var(--accent-primary);
             color: white;
         }
 
@@ -812,23 +859,14 @@
         }
 
         .nav-item.active {
-            color: var(--accent-green);
+            color: #7d9385;
         }
 
-        .nav-item.active i {
-            position: relative;
-        }
-
-        .nav-item.active i::after {
-            content: '';
-            position: absolute;
-            top: -4px;
-            right: -5px;
-            width: 6px;
-            height: 6px;
-            border-radius: 50%;
-            background: var(--sakura);
-        }
+        body[data-page="accueil"] .nav-item.active { color: #d9678a; }
+        body[data-page="programme"] .nav-item.active { color: #d9784f; }
+        body[data-page="budget"] .nav-item.active { color: #c94a1f; }
+        body[data-page="checklist"] .nav-item.active { color: #b8802c; }
+        body[data-page="infos"] .nav-item.active { color: #e0468a; }
 
         .modal {
             display: none;
@@ -909,7 +947,7 @@
         }
 
         .btn-modal.save {
-            background-color: var(--accent-green);
+            background-color: var(--accent-primary);
             color: white;
         }
 
@@ -929,7 +967,7 @@
             width: 28px;
             height: 28px;
             border-radius: 50%;
-            background: var(--accent-green);
+            background: var(--accent-primary);
             color: white;
             text-decoration: none;
             font-size: 0.75rem;
@@ -960,9 +998,9 @@
         .checklist-selector-btn {
             padding: 5px 12px;
             border-radius: 20px;
-            border: 1.5px solid var(--accent-green);
+            border: 1.5px solid var(--accent-primary);
             background: transparent;
-            color: var(--accent-green);
+            color: var(--accent-primary);
             font-size: 0.8rem;
             font-weight: 600;
             cursor: pointer;
@@ -971,7 +1009,7 @@
             white-space: nowrap;
         }
         .checklist-selector-btn.active {
-            background: var(--accent-green);
+            background: var(--accent-primary);
             color: white;
         }
         .checklist-selector-btn:hover:not(.active) {
@@ -1030,7 +1068,7 @@
             padding: 7px 14px;
             border: none;
             border-radius: 8px;
-            background: var(--accent-green);
+            background: var(--accent-primary);
             color: white;
             font-size: 1rem;
             cursor: pointer;
@@ -1043,6 +1081,14 @@
 
     <!-- ================= ACCUEIL ================= -->
     <div id="page-accueil" class="page active">
+        <!-- Pétales de sakura décoratifs, uniquement sur l'accueil — ne bloquent aucun clic -->
+        <div class="sakura-container" aria-hidden="true">
+            <div class="sakura-petal" style="left:8%; --drift:25px; animation-duration:9s; animation-delay:0s;"></div>
+            <div class="sakura-petal" style="left:28%; --drift:-20px; animation-duration:11s; animation-delay:3s;"></div>
+            <div class="sakura-petal" style="left:52%; --drift:22px; animation-duration:8s; animation-delay:5.5s;"></div>
+            <div class="sakura-petal" style="left:74%; --drift:-25px; animation-duration:10s; animation-delay:1.5s;"></div>
+            <div class="sakura-petal" style="left:90%; --drift:18px; animation-duration:12s; animation-delay:4s;"></div>
+        </div>
         <div class="home-header">
             <div class="home-header-content">
                 <div class="japan-label">日本</div>
@@ -1316,10 +1362,10 @@
         <div class="modal-content">
             <h3>Qu'est-ce que tu veux ajouter ?</h3>
             <div class="modal-buttons" style="flex-direction: column; gap: 12px;">
-                <button class="btn-modal save" style="background-color: var(--accent-green); display:flex; align-items:center; justify-content:center; gap:10px;" onclick="closeModal('modal-choose-type'); openAddVolModal();">
+                <button class="btn-modal save" style="background-color: var(--accent-primary); display:flex; align-items:center; justify-content:center; gap:10px;" onclick="closeModal('modal-choose-type'); openAddVolModal();">
                     <i class="fa-solid fa-plane"></i> Un vol
                 </button>
-                <button class="btn-modal save" style="background-color: var(--accent-green); display:flex; align-items:center; justify-content:center; gap:10px;" onclick="closeModal('modal-choose-type'); openAddTransportModal();">
+                <button class="btn-modal save" style="background-color: var(--accent-primary); display:flex; align-items:center; justify-content:center; gap:10px;" onclick="closeModal('modal-choose-type'); openAddTransportModal();">
                     <i class="fa-solid fa-train"></i> Un trajet en train
                 </button>
             </div>
@@ -1689,10 +1735,11 @@
         function switchTab(tabId, el) {
             document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
             document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
-            
+
             document.getElementById('page-' + tabId).classList.add('active');
             el.classList.add('active');
-            
+            document.body.dataset.page = tabId;
+
             if (tabId === 'budget') {
                 updateBudgetUI();
             }
@@ -1832,14 +1879,14 @@
             const pnrHtml = vol.pnr ? `<div class="flight-meta-pill"><span>Réservation (PNR)</span><span>${esc(vol.pnr)}</span></div>` : '';
             const seatsHtml = vol.seats ? `<div class="flight-meta-pill"><span>Siège(s)</span><span>${esc(vol.seats)}</span></div>` : '';
             const ticketUrl = safeUrl(vol.ticketLink);
-            const ticketHtml = ticketUrl ? `<div class="flight-meta-pill"><span>Billet Électronique</span><span><a href="${ticketUrl}" target="_blank" rel="noopener" style="color: var(--accent-green); text-decoration: underline;">Ouvrir</a></span></div>` : '';
+            const ticketHtml = ticketUrl ? `<div class="flight-meta-pill"><span>Billet Électronique</span><span><a href="${ticketUrl}" target="_blank" rel="noopener" style="color: var(--accent-primary); text-decoration: underline;">Ouvrir</a></span></div>` : '';
 
             let html = `
                 <div class="flight-detail-segment">
                     <div class="segment-dot"></div>
                     <div style="font-weight: 800; font-size: 1rem; display: flex; justify-content: space-between;">
                         <span>${esc(vol.depCity)} (${esc(vol.dep)})</span>
-                        <span style="color: var(--accent-green);">${esc(vol.depTime || '')}</span>
+                        <span style="color: var(--accent-primary);">${esc(vol.depTime || '')}</span>
                     </div>
                     <div style="font-size: 0.82rem; color: var(--text-muted); font-weight: 600; margin-top: 2px;">
                         ${esc(vol.depTerminal || '')} • Vol ${esc(vol.num1 || '')}
@@ -1857,7 +1904,7 @@
                         <div class="segment-dot"></div>
                         <div style="font-weight: 800; font-size: 1rem; display: flex; justify-content: space-between;">
                             <span>${esc(vol.arrCity)} (${esc(vol.arr)})</span>
-                            <span style="color: var(--accent-green);">${esc(vol.arrTime || '')}</span>
+                            <span style="color: var(--accent-primary);">${esc(vol.arrTime || '')}</span>
                         </div>
                         <div style="font-size: 0.82rem; color: var(--text-muted); font-weight: 600; margin-top: 2px;">
                             ${esc(vol.arrTerminal || '')} • Vol ${esc(vol.num2 || '')}
@@ -1872,7 +1919,7 @@
                 ${seatsHtml}
                 ${ticketHtml}
                 <div style="text-align:right; margin-top: 10px;">
-                    <button onclick="event.stopPropagation(); openEditVolModal(${index})" class="details-link" style="border: 1.5px solid var(--accent-green); border-radius: 20px; padding: 6px 16px;">
+                    <button onclick="event.stopPropagation(); openEditVolModal(${index})" class="details-link" style="border: 1.5px solid var(--accent-primary); border-radius: 20px; padding: 6px 16px;">
                         <i class="fa-solid fa-pen-to-square"></i> Modifier
                     </button>
                 </div>
@@ -1985,7 +2032,7 @@
                                 <div class="card-icon"><i class="fa-solid fa-plane"></i></div>
                                 <div>
                                     <div class="card-title">${esc(vol.type)} — ${esc(vol.compagnie)}</div>
-                                    <div class="card-subtitle" style="font-weight: 700; color: var(--accent-green);">${esc(vol.num1)} ${vol.num2 ? ' & ' + esc(vol.num2) : ''}</div>
+                                    <div class="card-subtitle" style="font-weight: 700; color: var(--accent-primary);">${esc(vol.num1)} ${vol.num2 ? ' & ' + esc(vol.num2) : ''}</div>
                                 </div>
                             </div>
                             <span class="card-date">${esc(vol.date)}</span>
@@ -2041,14 +2088,14 @@
                     <div class="segment-dot"></div>
                     <div style="font-weight: 800; font-size: 1rem; display: flex; justify-content: space-between;">
                         <span>${esc(t.depStation)}</span>
-                        <span style="color: var(--accent-green);">${esc(t.depTime || '')}</span>
+                        <span style="color: var(--accent-primary);">${esc(t.depTime || '')}</span>
                     </div>
                 </div>
                 <div class="flight-detail-segment">
                     <div class="segment-dot"></div>
                     <div style="font-weight: 800; font-size: 1rem; display: flex; justify-content: space-between;">
                         <span>${esc(t.arrStation)}</span>
-                        <span style="color: var(--accent-green);">${esc(t.arrTime || '')}</span>
+                        <span style="color: var(--accent-primary);">${esc(t.arrTime || '')}</span>
                     </div>
                 </div>
                 ${depVoieHtml}
@@ -2056,7 +2103,7 @@
                 ${seatHtml}
                 ${notesHtml}
                 <div style="text-align:right; margin-top: 10px;">
-                    <button onclick="event.stopPropagation(); openEditTransportModal(${index})" class="details-link" style="border: 1.5px solid var(--accent-green); border-radius: 20px; padding: 6px 16px;">
+                    <button onclick="event.stopPropagation(); openEditTransportModal(${index})" class="details-link" style="border: 1.5px solid var(--accent-primary); border-radius: 20px; padding: 6px 16px;">
                         <i class="fa-solid fa-pen-to-square"></i> Modifier
                     </button>
                 </div>
@@ -2084,7 +2131,7 @@
                                 <div class="card-icon"><i class="fa-solid ${icon}"></i></div>
                                 <div>
                                     <div class="card-title">${esc(t.train || t.type)}</div>
-                                    <div class="card-subtitle" style="font-weight: 700; color: var(--accent-green);">${esc(t.type || '')}</div>
+                                    <div class="card-subtitle" style="font-weight: 700; color: var(--accent-primary);">${esc(t.type || '')}</div>
                                 </div>
                             </div>
                             <span class="card-date">${esc(t.date)}</span>
@@ -2342,12 +2389,12 @@
                                     <div class="segment-dot" style="margin-top:4px; flex-shrink:0;"></div>
                                     <div style="flex:1;" onclick="event.stopPropagation();">
                                         <div style="display:flex; gap:6px; flex-wrap:wrap;">
-                                            <input type="text" id="edit-act-heure-${act.id}" value="${esc(act.heure)}" placeholder="Heure" style="flex:1; min-width:64px; padding:7px 10px; border:1.5px solid var(--accent-green); border-radius:8px; font-size:0.85rem;">
-                                            <input type="text" id="edit-act-texte-${act.id}" value="${esc(act.texte)}" placeholder="Activité" style="flex:2; min-width:100px; padding:7px 10px; border:1.5px solid var(--accent-green); border-radius:8px; font-size:0.85rem;">
-                                            <input type="text" id="edit-act-lien-${act.id}" value="${esc(act.lien || '')}" placeholder="Lien Maps" style="flex:2; min-width:100px; padding:7px 10px; border:1.5px solid var(--accent-green); border-radius:8px; font-size:0.85rem;">
+                                            <input type="text" id="edit-act-heure-${act.id}" value="${esc(act.heure)}" placeholder="Heure" style="flex:1; min-width:64px; padding:7px 10px; border:1.5px solid var(--accent-primary); border-radius:8px; font-size:0.85rem;">
+                                            <input type="text" id="edit-act-texte-${act.id}" value="${esc(act.texte)}" placeholder="Activité" style="flex:2; min-width:100px; padding:7px 10px; border:1.5px solid var(--accent-primary); border-radius:8px; font-size:0.85rem;">
+                                            <input type="text" id="edit-act-lien-${act.id}" value="${esc(act.lien || '')}" placeholder="Lien Maps" style="flex:2; min-width:100px; padding:7px 10px; border:1.5px solid var(--accent-primary); border-radius:8px; font-size:0.85rem;">
                                         </div>
                                         <div style="display:flex; gap:8px; margin-top:8px;">
-                                            <button onclick="saveEditActivite(${progId}, ${act.id})" style="flex:1; padding:7px; border:none; border-radius:8px; background:var(--accent-green); color:white; font-weight:700; cursor:pointer;">Enregistrer</button>
+                                            <button onclick="saveEditActivite(${progId}, ${act.id})" style="flex:1; padding:7px; border:none; border-radius:8px; background:var(--accent-primary); color:white; font-weight:700; cursor:pointer;">Enregistrer</button>
                                             <button onclick="cancelEditActivite(${progId})" style="flex:1; padding:7px; border:none; border-radius:8px; background:#f2f2f2; color:#333; font-weight:700; cursor:pointer;">Annuler</button>
                                         </div>
                                     </div>
@@ -2357,7 +2404,7 @@
                         }
                         const actUrl = safeUrl(act.lien);
                         const linkBtn = actUrl
-                            ? `<a href="${actUrl}" target="_blank" rel="noopener" class="activity-link-btn" style="display:inline-flex; align-items:center; justify-content:center; width:26px; height:26px; border-radius:50%; background:var(--accent-green); color:white; text-decoration:none; font-size:0.75rem; flex-shrink:0;" title="Voir sur la carte : ${actUrl}">📍</a>`
+                            ? `<a href="${actUrl}" target="_blank" rel="noopener" class="activity-link-btn" style="display:inline-flex; align-items:center; justify-content:center; width:26px; height:26px; border-radius:50%; background:var(--accent-primary); color:white; text-decoration:none; font-size:0.75rem; flex-shrink:0;" title="Voir sur la carte : ${actUrl}">📍</a>`
                             : `<span style="display:inline-block; width:26px; flex-shrink:0;"></span>`;
                         activitesHtml += `
                             <div class="flight-detail-segment" style="display:flex; align-items:flex-start; gap:8px;">
@@ -2398,7 +2445,7 @@
                                     <input type="text" id="inline-act-heure-${idSuffix}" placeholder="Heure" style="flex:1; min-width:64px; padding:7px 10px; border:1.5px solid #ddd; border-radius:8px; font-size:0.85rem;">
                                     <input type="text" id="inline-act-texte-${idSuffix}" placeholder="Activité" style="flex:2; min-width:100px; padding:7px 10px; border:1.5px solid #ddd; border-radius:8px; font-size:0.85rem;">
                                     <input type="text" id="inline-act-lien-${idSuffix}" placeholder="Lien Maps" style="flex:2; min-width:100px; padding:7px 10px; border:1.5px solid #ddd; border-radius:8px; font-size:0.85rem;">
-                                    <button onclick="addInlineDayActivite(${progId}, '${esc(date)}')" style="padding:7px 14px; border:none; border-radius:8px; background:var(--accent-green); color:white; font-size:1rem; cursor:pointer; font-weight:700;">+</button>
+                                    <button onclick="addInlineDayActivite(${progId}, '${esc(date)}')" style="padding:7px 14px; border:none; border-radius:8px; background:var(--accent-primary); color:white; font-size:1rem; cursor:pointer; font-weight:700;">+</button>
                                 </div>
                             </div>
                         </div>
@@ -2407,7 +2454,7 @@
             }
 
             const progMapsUrl = safeUrl(prog.maps);
-            const mapsHtml = progMapsUrl ? `<a href="${progMapsUrl}" target="_blank" rel="noopener" style="display:inline-block; margin-top: 10px; color: var(--accent-green); font-weight: 600; font-size: 0.85rem;">📍 Voir sur Google Maps</a>` : '';
+            const mapsHtml = progMapsUrl ? `<a href="${progMapsUrl}" target="_blank" rel="noopener" style="display:inline-block; margin-top: 10px; color: var(--accent-primary); font-weight: 600; font-size: 0.85rem;">📍 Voir sur Google Maps</a>` : '';
 
             container.innerHTML = `
                 <div class="jour-checklist-section">
@@ -2856,6 +2903,7 @@ function saveProgramme() {
         }
 
         window.onload = function() {
+            document.body.dataset.page = 'accueil';
             updateCountdown();
             renderVols();
             renderTransports();
