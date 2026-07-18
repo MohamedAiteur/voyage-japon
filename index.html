@@ -2218,6 +2218,35 @@
             renderDestinationDayBar(progId);
         }
 
+        let editingActivite = null; // id de l'activité en cours de modification, ou null
+
+        function startEditActivite(progId, activiteId) {
+            editingActivite = activiteId;
+            renderDestinationDayBar(progId);
+        }
+
+        function cancelEditActivite(progId) {
+            editingActivite = null;
+            renderDestinationDayBar(progId);
+        }
+
+        function saveEditActivite(progId, activiteId) {
+            const heure = document.getElementById('edit-act-heure-' + activiteId).value.trim();
+            const texte = document.getElementById('edit-act-texte-' + activiteId).value.trim();
+            const lien = document.getElementById('edit-act-lien-' + activiteId).value.trim();
+            if (!heure || !texte) return;
+            const prog = appData.programme.find(p => p.id === progId);
+            if (!prog) return;
+            const act = (prog.activites || []).find(a => a.id === activiteId);
+            if (!act) return;
+            act.heure = heure;
+            act.texte = texte;
+            act.lien = lien;
+            saveToLocalStorage();
+            editingActivite = null;
+            renderDestinationDayBar(progId);
+        }
+
         // Barre déroulante affichée directement dans la carte de la destination :
         // liste des jours (chacun dépliable sur place avec son résumé complet
         // et les liens Google Maps) + ajout d'un jour, sans ouvrir de page.
@@ -2242,6 +2271,25 @@
 
                     let activitesHtml = '';
                     dayActivites.forEach(act => {
+                        if (editingActivite === act.id) {
+                            activitesHtml += `
+                                <div class="flight-detail-segment" style="display:flex; align-items:flex-start; gap:8px;">
+                                    <div class="segment-dot" style="margin-top:4px; flex-shrink:0;"></div>
+                                    <div style="flex:1;" onclick="event.stopPropagation();">
+                                        <div style="display:flex; gap:6px; flex-wrap:wrap;">
+                                            <input type="text" id="edit-act-heure-${act.id}" value="${esc(act.heure)}" placeholder="Heure" style="flex:1; min-width:64px; padding:7px 10px; border:1.5px solid var(--accent-green); border-radius:8px; font-size:0.85rem;">
+                                            <input type="text" id="edit-act-texte-${act.id}" value="${esc(act.texte)}" placeholder="Activité" style="flex:2; min-width:100px; padding:7px 10px; border:1.5px solid var(--accent-green); border-radius:8px; font-size:0.85rem;">
+                                            <input type="text" id="edit-act-lien-${act.id}" value="${esc(act.lien || '')}" placeholder="Lien Maps" style="flex:2; min-width:100px; padding:7px 10px; border:1.5px solid var(--accent-green); border-radius:8px; font-size:0.85rem;">
+                                        </div>
+                                        <div style="display:flex; gap:8px; margin-top:8px;">
+                                            <button onclick="saveEditActivite(${progId}, ${act.id})" style="flex:1; padding:7px; border:none; border-radius:8px; background:var(--accent-green); color:white; font-weight:700; cursor:pointer;">Enregistrer</button>
+                                            <button onclick="cancelEditActivite(${progId})" style="flex:1; padding:7px; border:none; border-radius:8px; background:#f2f2f2; color:#333; font-weight:700; cursor:pointer;">Annuler</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            `;
+                            return;
+                        }
                         const actUrl = safeUrl(act.lien);
                         const linkBtn = actUrl
                             ? `<a href="${actUrl}" target="_blank" rel="noopener" class="activity-link-btn" style="display:inline-flex; align-items:center; justify-content:center; width:26px; height:26px; border-radius:50%; background:var(--accent-green); color:white; text-decoration:none; font-size:0.75rem; flex-shrink:0;" title="Voir sur la carte : ${actUrl}">📍</a>`
@@ -2252,7 +2300,10 @@
                                 <div style="flex:1;">
                                     <div style="display:flex; justify-content:space-between; align-items:flex-start;">
                                         <div style="font-weight: 800; font-size: 1rem;">${esc(act.heure)}</div>
-                                        <button onclick="event.stopPropagation(); deleteDayActivite(${progId}, '${esc(date)}', ${act.id})" style="background:none; border:none; color:#ccc; cursor:pointer; font-size:0.85rem;"><i class="fa-solid fa-xmark"></i></button>
+                                        <div style="display:flex; gap:10px;">
+                                            <button onclick="event.stopPropagation(); startEditActivite(${progId}, ${act.id})" style="background:none; border:none; color:#bbb; cursor:pointer; font-size:0.85rem;"><i class="fa-solid fa-pen-to-square"></i></button>
+                                            <button onclick="event.stopPropagation(); deleteDayActivite(${progId}, '${esc(date)}', ${act.id})" style="background:none; border:none; color:#ccc; cursor:pointer; font-size:0.85rem;"><i class="fa-solid fa-xmark"></i></button>
+                                        </div>
                                     </div>
                                     <div style="font-size: 0.92rem; color: #444; margin-top: 2px; display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
                                         <span style="flex:1; min-width:0;">${esc(act.texte)}</span>
