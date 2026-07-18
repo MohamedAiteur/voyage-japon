@@ -2619,6 +2619,7 @@ function saveProgramme() {
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
         import { getFirestore, doc, getDoc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyBm8xMiTMBN1oI9Bc8ZyKBGeoWOcVnZ_yk",
@@ -2631,13 +2632,21 @@ function saveProgramme() {
 
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
+        const auth = getAuth(app);
         // Un seul document partagé pour vous deux : voyage/data
         const tripDocRef = doc(db, "voyage", "data");
 
         let localWriteInProgress = false;
+        let pendingCloudData = null;
 
         // Fonction appelée par saveToLocalStorage() pour pousser les données vers le cloud
         window.saveToCloud = async function (data) {
+            // Tant que l'authentification n'est pas terminée, les règles Firestore
+            // refuseraient l'écriture : on retente automatiquement une fois connecté.
+            if (!auth.currentUser) {
+                pendingCloudData = data;
+                return;
+            }
             localWriteInProgress = true;
             try {
                 await setDoc(tripDocRef, data);
@@ -2647,13 +2656,26 @@ function saveProgramme() {
             setTimeout(() => { localWriteInProgress = false; }, 500);
         };
 
+        // Authentification anonyme : chaque appareil obtient une identité technique
+        // sans mot de passe, requise par les règles Firestore (request.auth != null)
+        // pour empêcher n'importe qui sur Internet de lire/écrire vos données.
+        onAuthStateChanged(auth, (user) => {
+            if (user && pendingCloudData) {
+                window.saveToCloud(pendingCloudData);
+                pendingCloudData = null;
+            }
+        });
+        signInAnonymously(auth).catch((e) => {
+            console.error("Erreur d'authentification Firebase :", e);
+        });
+
         // Écoute en direct : dès que ta copine modifie quelque chose, ça se met à jour chez toi automatiquement
         onSnapshot(tripDocRef, (snap) => {
             if (localWriteInProgress) return;
             if (snap.exists()) {
                 window.appData = snap.data();
                 if (window.refreshAllUI) window.refreshAllUI();
-            } else {
+            } else if (auth.currentUser) {
                 // Première connexion : personne n'a encore rien envoyé au cloud, on initialise avec les données actuelles
                 window.saveToCloud(window.appData);
             }
