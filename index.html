@@ -31,6 +31,14 @@
         #page-checklist { --accent-primary: #b8802c; --card-bg: #fdf8ef; }
         #page-infos { --accent-primary: #e0468a; --card-bg: #f9f3fa; }
 
+        /* Les modals s'ouvrent en dehors des pages dans le HTML : elles reprennent
+           la couleur de la page depuis laquelle elles sont ouvertes via data-page */
+        body[data-page="accueil"] .modal { --accent-primary: #d9678a; --card-bg: #fff6f8; }
+        body[data-page="programme"] .modal { --accent-primary: #d9784f; --card-bg: #fff8f3; }
+        body[data-page="budget"] .modal { --accent-primary: #c94a1f; --card-bg: #fff5f0; }
+        body[data-page="checklist"] .modal { --accent-primary: #b8802c; --card-bg: #fdf8ef; }
+        body[data-page="infos"] .modal { --accent-primary: #e0468a; --card-bg: #f9f3fa; }
+
         * {
             box-sizing: border-box;
             margin: 0;
@@ -882,7 +890,7 @@
         }
 
         .modal-content {
-            background-color: white;
+            background-color: var(--card-bg);
             width: 100%;
             border-top-left-radius: 25px;
             border-top-right-radius: 25px;
