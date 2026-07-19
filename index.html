@@ -3018,17 +3018,28 @@
         // que de re-chercher par son nom. Les liens raccourcis (maps.app.goo.gl)
         // ne contiennent aucune coordonnée exploitable côté client : impossible
         // à éviter sans passer par un serveur qui suit la redirection.
+        // Le voyage se déroule entièrement au Japon : toute coordonnée extraite
+        // en dehors de cette zone est presque sûrement une fausse détection
+        // (ex: un lien mal résolu par le proxy) plutôt qu'un vrai lieu du voyage.
+        function isInJapanBounds(lat, lng) {
+            return lat >= 20 && lat <= 46 && lng >= 122 && lng <= 154;
+        }
+
         function extractLatLng(mapsUrl) {
             if (!mapsUrl) return null;
             const trimmed = String(mapsUrl).trim();
-            let m = trimmed.match(/@(-?\d+\.\d+),(-?\d+\.\d+)/);
-            if (m) return `${m[1]},${m[2]}`;
-            m = trimmed.match(/!3d(-?\d+\.\d+)!4d(-?\d+\.\d+)/);
-            if (m) return `${m[1]},${m[2]}`;
-            m = trimmed.match(/[?&]q=(-?\d+\.\d+),(-?\d+\.\d+)/);
-            if (m) return `${m[1]},${m[2]}`;
-            m = trimmed.match(/^(-?\d{1,3}\.\d+),\s*(-?\d{1,3}\.\d+)$/);
-            if (m) return `${m[1]},${m[2]}`;
+            const patterns = [
+                /@(-?\d+\.\d+),(-?\d+\.\d+)/,
+                /!3d(-?\d+\.\d+)!4d(-?\d+\.\d+)/,
+                /[?&]q=(-?\d+\.\d+),(-?\d+\.\d+)/,
+                /^(-?\d{1,3}\.\d+),\s*(-?\d{1,3}\.\d+)$/
+            ];
+            for (const pattern of patterns) {
+                const m = trimmed.match(pattern);
+                if (m && isInJapanBounds(parseFloat(m[1]), parseFloat(m[2]))) {
+                    return `${m[1]},${m[2]}`;
+                }
+            }
             return null;
         }
 
