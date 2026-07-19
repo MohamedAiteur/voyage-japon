@@ -1259,28 +1259,11 @@
                     </select>
                 </div>
 
-                <div class="input-group" id="map-hotel-address-group" style="display:none;">
-                    <label>Lien Google Maps de cet hôtel</label>
-                    <div style="display:flex; gap:8px;">
-                        <input type="text" id="map-hotel-address-input" placeholder="Colle le lien Google Maps ici" style="flex:1;">
-                        <button type="button" onclick="saveHotelMapLink()" style="flex:0 0 auto; border:none; background-color: var(--accent-primary); color:white; border-radius:10px; padding:0 18px; font-weight:700; cursor:pointer;">Enregistrer</button>
-                    </div>
-                    <p style="font-size:0.75rem; color: var(--text-muted); margin-top:6px;">⚠️ Si le lien copié depuis l'appli Maps est raccourci (maps.app.goo.gl), le site ne peut pas retrouver le point exact. Pour un pin précis : dans Google Maps, appuie longuement sur le lieu puis appuie sur les coordonnées affichées en bas (ex. 34.9671, 135.7727) pour les copier, et colle-les ici à la place du lien.</p>
-                </div>
-
                 <div class="input-group">
                     <label>Activité de mon itinéraire (point d'arrivée)</label>
                     <select id="map-itinerary-select" onchange="updateMapFromItinerarySelect()">
                         <option value="">-- Choisir une activité --</option>
                     </select>
-                </div>
-
-                <div class="input-group">
-                    <label>Ou tape une adresse / un lieu</label>
-                    <div style="display:flex; gap:8px;">
-                        <input type="text" id="map-address-input" placeholder="Ex: Fushimi Inari Shrine, Kyoto" style="flex:1;">
-                        <button type="button" onclick="updateMapFromAddressInput()" style="flex:0 0 auto; border:none; background-color: var(--accent-primary); color:white; border-radius:10px; padding:0 18px; font-weight:700; cursor:pointer;">Voir</button>
-                    </div>
                 </div>
 
                 <div style="border-radius:14px; overflow:hidden; margin-top:4px; background-color:#f2f2f2;">
@@ -1631,7 +1614,8 @@
 
             <div class="input-group">
                 <label>Lien Google Maps</label>
-                <input type="text" id="prog-maps" placeholder="https://...">
+                <input type="text" id="prog-maps" placeholder="Lien Maps ou coordonnées (ex: 34.9671, 135.7727)">
+                <p style="font-size:0.75rem; color: var(--text-muted); margin-top:6px;">⚠️ Un lien raccourci copié depuis l'appli (maps.app.goo.gl) ne permet pas de retrouver le point exact. Pour un pin précis : appui long sur le lieu dans Google Maps, puis tape les coordonnées affichées en bas pour les copier, et colle-les ici.</p>
             </div>
 
             <div class="modal-buttons">
@@ -3076,32 +3060,7 @@
             const opt = select && select.selectedIndex >= 0 ? select.options[select.selectedIndex] : null;
             mapOrigin = select ? select.value : '';
             mapOriginLink = opt ? (opt.dataset.link || '') : '';
-
-            const addressGroup = document.getElementById('map-hotel-address-group');
-            const addressInput = document.getElementById('map-hotel-address-input');
-            const progId = opt ? opt.dataset.progId : '';
-            if (addressGroup && addressInput) {
-                if (progId) {
-                    const prog = appData.programme.find(p => p.id === parseInt(progId));
-                    addressGroup.style.display = '';
-                    addressInput.value = (prog && prog.maps) || '';
-                    addressInput.dataset.progId = progId;
-                } else {
-                    addressGroup.style.display = 'none';
-                }
-            }
-
             refreshMapEmbed();
-        }
-
-        function saveHotelMapLink() {
-            const input = document.getElementById('map-hotel-address-input');
-            if (!input || !input.dataset.progId) return;
-            const prog = appData.programme.find(p => p.id === parseInt(input.dataset.progId));
-            if (!prog) return;
-            prog.maps = input.value.trim();
-            saveToLocalStorage();
-            populateHotelMapSelect();
         }
 
         function updateMapFromItinerarySelect() {
@@ -3109,23 +3068,7 @@
             const opt = select && select.selectedIndex >= 0 ? select.options[select.selectedIndex] : null;
             mapDestination = select ? select.value : '';
             mapDestinationLink = opt ? (opt.dataset.link || '') : '';
-            if (mapDestination) {
-                const addressInput = document.getElementById('map-address-input');
-                if (addressInput) addressInput.value = '';
-            }
             refreshMapEmbed();
-        }
-
-        function updateMapFromAddressInput() {
-            const input = document.getElementById('map-address-input');
-            const query = input ? input.value.trim() : '';
-            if (query) {
-                mapDestination = query;
-                mapDestinationLink = '';
-                const itSelect = document.getElementById('map-itinerary-select');
-                if (itSelect) itSelect.value = '';
-                refreshMapEmbed();
-            }
         }
 
         function populateHotelMapSelect() {
