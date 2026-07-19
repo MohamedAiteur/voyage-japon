@@ -1244,6 +1244,46 @@
             <p>Tout ce qu'il faut avoir sous la main</p>
         </div>
         <div class="content-container">
+            <div class="card">
+                <div class="card-header-row">
+                    <div class="card-title-group">
+                        <div class="card-icon"><i class="fa-solid fa-map-location-dot"></i></div>
+                        <div class="card-title">Carte & Adresses</div>
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label>Mon hôtel actuel (point de départ)</label>
+                    <select id="map-hotel-select" onchange="updateMapFromHotelSelect()">
+                        <option value="">-- Choisir une destination --</option>
+                    </select>
+                </div>
+
+                <div class="input-group">
+                    <label>Activité de mon itinéraire (point d'arrivée)</label>
+                    <select id="map-itinerary-select" onchange="updateMapFromItinerarySelect()">
+                        <option value="">-- Choisir une activité --</option>
+                    </select>
+                </div>
+
+                <div class="input-group">
+                    <label>Ou tape une adresse / un lieu</label>
+                    <div style="display:flex; gap:8px;">
+                        <input type="text" id="map-address-input" placeholder="Ex: Fushimi Inari Shrine, Kyoto" style="flex:1;">
+                        <button type="button" onclick="updateMapFromAddressInput()" style="flex:0 0 auto; border:none; background-color: var(--accent-primary); color:white; border-radius:10px; padding:0 18px; font-weight:700; cursor:pointer;">Voir</button>
+                    </div>
+                </div>
+
+                <div style="border-radius:14px; overflow:hidden; margin-top:4px; background-color:#f2f2f2;">
+                    <iframe id="map-embed-iframe" width="100%" height="220" style="border:0; display:block;" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+                </div>
+                <p style="font-size:0.78rem; color:var(--text-muted); margin-top:6px;">Le trajet s'affiche automatiquement dès que l'hôtel et une destination sont choisis.</p>
+
+                <a id="map-directions-link" href="#" target="_blank" rel="noopener" class="btn-modal save" style="text-align:center; text-decoration:none; display:block; margin-top:12px;">
+                    <i class="fa-solid fa-diamond-turn-right"></i>&nbsp; Itinéraire dans Maps
+                </a>
+            </div>
+
             <div id="infos-list"></div>
         </div>
         <button class="btn-add-float" onclick="openModal('modal-infos')"><i class="fa-solid fa-plus"></i></button>
@@ -2893,6 +2933,120 @@
                     </div>
                 `;
             });
+
+            populateHotelMapSelect();
+            populateItineraryMapSelect();
+        }
+
+        // --- CARTE & ADRESSES (sans clé API — iframe Google Maps publique) ---
+        let mapOrigin = '';
+        let mapDestination = '';
+
+        function buildMapEmbedUrl(query) {
+            return `https://www.google.com/maps?q=${encodeURIComponent(query)}&output=embed`;
+        }
+
+        function buildRouteEmbedUrl(origin, destination) {
+            return `https://www.google.com/maps?saddr=${encodeURIComponent(origin)}&daddr=${encodeURIComponent(destination)}&output=embed`;
+        }
+
+        function buildDirectionsUrl(destination, origin) {
+            let url = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(destination)}`;
+            if (origin) url += `&origin=${encodeURIComponent(origin)}`;
+            return url;
+        }
+
+        // Recalcule la carte : trajet si hôtel + destination sont choisis,
+        // sinon un simple point, sinon une vue d'ensemble du Japon.
+        function refreshMapEmbed() {
+            const iframe = document.getElementById('map-embed-iframe');
+            const link = document.getElementById('map-directions-link');
+            if (!iframe) return;
+
+            if (mapOrigin && mapDestination) {
+                iframe.src = buildRouteEmbedUrl(mapOrigin, mapDestination);
+                if (link) link.href = buildDirectionsUrl(mapDestination, mapOrigin);
+            } else if (mapDestination) {
+                iframe.src = buildMapEmbedUrl(mapDestination);
+                if (link) link.href = buildDirectionsUrl(mapDestination);
+            } else if (mapOrigin) {
+                iframe.src = buildMapEmbedUrl(mapOrigin);
+                if (link) link.href = buildDirectionsUrl(mapOrigin);
+            } else {
+                iframe.src = buildMapEmbedUrl('Japon');
+                if (link) link.href = '#';
+            }
+        }
+
+        function updateMapFromHotelSelect() {
+            const select = document.getElementById('map-hotel-select');
+            mapOrigin = select ? select.value : '';
+            refreshMapEmbed();
+        }
+
+        function updateMapFromItinerarySelect() {
+            const select = document.getElementById('map-itinerary-select');
+            mapDestination = select ? select.value : '';
+            if (mapDestination) {
+                const addressInput = document.getElementById('map-address-input');
+                if (addressInput) addressInput.value = '';
+            }
+            refreshMapEmbed();
+        }
+
+        function updateMapFromAddressInput() {
+            const input = document.getElementById('map-address-input');
+            const query = input ? input.value.trim() : '';
+            if (query) {
+                mapDestination = query;
+                const itSelect = document.getElementById('map-itinerary-select');
+                if (itSelect) itSelect.value = '';
+                refreshMapEmbed();
+            }
+        }
+
+        function populateHotelMapSelect() {
+            const select = document.getElementById('map-hotel-select');
+            if (!select) return;
+            const previousValue = select.value;
+
+            let html = '<option value="">-- Choisir une destination --</option>';
+            (appData.programme || []).forEach(prog => {
+                const query = `${prog.hotel}, ${prog.ville}, Japon`;
+                html += `<option value="${esc(query)}">${esc(prog.ville)} — ${esc(prog.hotel)}</option>`;
+            });
+            select.innerHTML = html;
+
+            if (previousValue && [...select.options].some(o => o.value === previousValue)) {
+                select.value = previousValue;
+                mapOrigin = previousValue;
+            } else if (!mapOrigin && appData.programme && appData.programme.length > 0) {
+                select.value = select.options[1].value;
+                mapOrigin = select.value;
+            }
+            refreshMapEmbed();
+        }
+
+        // Liste toutes les activités déjà renseignées dans Itinéraire (avec heure et
+        // journée) pour pouvoir choisir directement une destination sans la retaper.
+        function populateItineraryMapSelect() {
+            const select = document.getElementById('map-itinerary-select');
+            if (!select) return;
+            const previousValue = select.value;
+
+            let html = '<option value="">-- Choisir une activité --</option>';
+            (appData.programme || []).forEach(prog => {
+                const activites = (prog.activites || []).slice().sort((a, b) => (a.date + ' ' + a.heure).localeCompare(b.date + ' ' + b.heure));
+                activites.forEach(act => {
+                    const query = `${act.texte}, ${prog.ville}, Japon`;
+                    html += `<option value="${esc(query)}">${esc(prog.ville)} · ${esc(act.date)} ${esc(act.heure)} — ${esc(act.texte)}</option>`;
+                });
+            });
+            select.innerHTML = html;
+
+            if (previousValue && [...select.options].some(o => o.value === previousValue)) {
+                select.value = previousValue;
+            }
         }
 
         function saveInfo() {
