@@ -1259,6 +1259,15 @@
                     </select>
                 </div>
 
+                <div class="input-group" id="map-hotel-address-group" style="display:none;">
+                    <label>Lien Google Maps de cet hôtel</label>
+                    <div style="display:flex; gap:8px;">
+                        <input type="text" id="map-hotel-address-input" placeholder="Colle le lien Google Maps ici" style="flex:1;">
+                        <button type="button" onclick="saveHotelMapLink()" style="flex:0 0 auto; border:none; background-color: var(--accent-primary); color:white; border-radius:10px; padding:0 18px; font-weight:700; cursor:pointer;">Enregistrer</button>
+                    </div>
+                    <p style="font-size:0.75rem; color: var(--text-muted); margin-top:6px;">⚠️ Si le lien copié depuis l'appli Maps est raccourci (maps.app.goo.gl), le site ne peut pas retrouver le point exact. Pour un pin précis : dans Google Maps, appuie longuement sur le lieu puis appuie sur les coordonnées affichées en bas (ex. 34.9671, 135.7727) pour les copier, et colle-les ici à la place du lien.</p>
+                </div>
+
                 <div class="input-group">
                     <label>Activité de mon itinéraire (point d'arrivée)</label>
                     <select id="map-itinerary-select" onchange="updateMapFromItinerarySelect()">
@@ -1284,9 +1293,12 @@
                 </a>
             </div>
 
+            <h2 class="section-title">Billets & Tickets</h2>
+            <div id="billets-list"></div>
+
             <div id="infos-list"></div>
         </div>
-        <button class="btn-add-float" onclick="openModal('modal-infos')"><i class="fa-solid fa-plus"></i></button>
+        <button class="btn-add-float" onclick="openModal('modal-choose-info-type')"><i class="fa-solid fa-plus"></i></button>
     </div>
 
     <!-- ================= NAV BAR ================= -->
@@ -1463,6 +1475,58 @@
             </div>
             <div class="modal-buttons">
                 <button class="btn-modal cancel" onclick="closeModal('modal-choose-type')">Annuler</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= MODAL CHOIX INFO / BILLET ================= -->
+    <div class="modal" id="modal-choose-info-type">
+        <div class="modal-content">
+            <h3>Qu'est-ce que tu veux ajouter ?</h3>
+            <div class="modal-buttons" style="flex-direction: column; gap: 12px;">
+                <button class="btn-modal save" style="background-color: var(--accent-primary); display:flex; align-items:center; justify-content:center; gap:10px;" onclick="closeModal('modal-choose-info-type'); openModal('modal-infos');">
+                    <i class="fa-solid fa-circle-info"></i> Une info
+                </button>
+                <button class="btn-modal save" style="background-color: var(--accent-primary); display:flex; align-items:center; justify-content:center; gap:10px;" onclick="closeModal('modal-choose-info-type'); openAddBilletModal();">
+                    <i class="fa-solid fa-ticket"></i> Un billet
+                </button>
+            </div>
+            <div class="modal-buttons">
+                <button class="btn-modal cancel" onclick="closeModal('modal-choose-info-type')">Annuler</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= MODAL BILLET (AJOUT / MODIFICATION) ================= -->
+    <div class="modal" id="modal-billet">
+        <div class="modal-content">
+            <h3 id="billet-modal-title">Ajouter un billet</h3>
+            <input type="hidden" id="billet-edit-id" value="">
+
+            <div class="input-group">
+                <label>Nom du lieu</label>
+                <input type="text" id="billet-nom" placeholder="Ex: Universal Studios Japan">
+            </div>
+            <div class="input-group">
+                <label>Date</label>
+                <input type="text" id="billet-date" placeholder="Ex: 5 sept.">
+            </div>
+            <div class="input-group">
+                <label>Référence / N° de confirmation</label>
+                <input type="text" id="billet-reference" placeholder="Ex: ABC123456">
+            </div>
+            <div class="input-group">
+                <label>Lien du billet (e-mail, appli...)</label>
+                <input type="text" id="billet-lien" placeholder="https://...">
+            </div>
+            <div class="input-group">
+                <label>Notes</label>
+                <textarea id="billet-notes" rows="2" placeholder="Ex: Fast Pass inclus, à retirer au guichet..."></textarea>
+            </div>
+
+            <div class="modal-buttons">
+                <button class="btn-modal cancel" onclick="closeModal('modal-billet')">Annuler</button>
+                <button class="btn-modal save" onclick="saveBillet()">Enregistrer</button>
             </div>
         </div>
     </div>
@@ -1752,7 +1816,8 @@
                 { id: 3, titre: "JR Pass", desc: "Pass 14 jours activé le 31 août.\nValable Shinkansen (sauf Nozomi/Mizuho)." },
                 { id: 4, titre: "WiFi / Pocket WiFi", desc: "Récupération à l'aéroport KIX (comptoir Ninja WiFi).\nCode routeur : voir pochette." }
             ],
-            transports: []
+            transports: [],
+            billets: []
         };
 
         var appData = JSON.parse(localStorage.getItem('voyage_japon_data')) || defaultData;
@@ -1762,6 +1827,7 @@
         if (!appData.tripStart) appData.tripStart = defaultData.tripStart;
         if (!appData.tripEnd) appData.tripEnd = defaultData.tripEnd;
         if (!appData.transports) appData.transports = [];
+        if (!appData.billets) appData.billets = [];
 
         // Migre l'ancien format (une entrée par jour) vers le nouveau format
         // (une entrée par ville avec une plage de dates), en regroupant les
@@ -1835,6 +1901,7 @@
             renderChecklist();
             updateBudgetUI();
             renderInfos();
+            renderBillets();
         }
         window.refreshAllUI = refreshAllUI;
 
@@ -2504,7 +2571,7 @@
                                         <div style="display:flex; gap:6px; flex-wrap:wrap;">
                                             <input type="text" id="edit-act-heure-${act.id}" value="${esc(act.heure)}" placeholder="Heure" style="flex:1; min-width:64px; padding:7px 10px; border:1.5px solid var(--accent-primary); border-radius:8px; font-size:0.85rem;">
                                             <input type="text" id="edit-act-texte-${act.id}" value="${esc(act.texte)}" placeholder="Activité" style="flex:2; min-width:100px; padding:7px 10px; border:1.5px solid var(--accent-primary); border-radius:8px; font-size:0.85rem;">
-                                            <input type="text" id="edit-act-lien-${act.id}" value="${esc(act.lien || '')}" placeholder="Lien Maps" style="flex:2; min-width:100px; padding:7px 10px; border:1.5px solid var(--accent-primary); border-radius:8px; font-size:0.85rem;">
+                                            <input type="text" id="edit-act-lien-${act.id}" value="${esc(act.lien || '')}" placeholder="Lien Maps ou coordonnées" style="flex:2; min-width:100px; padding:7px 10px; border:1.5px solid var(--accent-primary); border-radius:8px; font-size:0.85rem;">
                                         </div>
                                         <div style="display:flex; gap:8px; margin-top:8px;">
                                             <button onclick="saveEditActivite(${progId}, ${act.id})" style="flex:1; padding:7px; border:none; border-radius:8px; background:var(--accent-primary); color:white; font-weight:700; cursor:pointer;">Enregistrer</button>
@@ -2557,7 +2624,7 @@
                                 <div style="display:flex; gap:6px; margin-top:10px; flex-wrap:wrap;" onclick="event.stopPropagation();">
                                     <input type="text" id="inline-act-heure-${idSuffix}" placeholder="Heure" style="flex:1; min-width:64px; padding:7px 10px; border:1.5px solid #ddd; border-radius:8px; font-size:0.85rem;">
                                     <input type="text" id="inline-act-texte-${idSuffix}" placeholder="Activité" style="flex:2; min-width:100px; padding:7px 10px; border:1.5px solid #ddd; border-radius:8px; font-size:0.85rem;">
-                                    <input type="text" id="inline-act-lien-${idSuffix}" placeholder="Lien Maps" style="flex:2; min-width:100px; padding:7px 10px; border:1.5px solid #ddd; border-radius:8px; font-size:0.85rem;">
+                                    <input type="text" id="inline-act-lien-${idSuffix}" placeholder="Lien Maps ou coordonnées" style="flex:2; min-width:100px; padding:7px 10px; border:1.5px solid #ddd; border-radius:8px; font-size:0.85rem;">
                                     <button onclick="addInlineDayActivite(${progId}, '${esc(date)}')" style="padding:7px 14px; border:none; border-radius:8px; background:var(--accent-primary); color:white; font-size:1rem; cursor:pointer; font-weight:700;">+</button>
                                 </div>
                             </div>
@@ -2960,15 +3027,22 @@
         }
 
         // Essaie d'extraire des coordonnées GPS d'un lien Google Maps déjà collé
-        // (ex: .../@34.6656,135.5006,17z/... ou !3d..!4d.. ou ?q=lat,lng) pour
-        // pointer sur le lieu exact plutôt que de re-chercher par son nom.
+        // (ex: .../@34.6656,135.5006,17z/... ou !3d..!4d.. ou ?q=lat,lng), ou de
+        // coordonnées collées telles quelles (ex: copiées via "Copier les
+        // coordonnées" dans l'appli Maps), pour pointer sur le lieu exact plutôt
+        // que de re-chercher par son nom. Les liens raccourcis (maps.app.goo.gl)
+        // ne contiennent aucune coordonnée exploitable côté client : impossible
+        // à éviter sans passer par un serveur qui suit la redirection.
         function extractLatLng(mapsUrl) {
             if (!mapsUrl) return null;
-            let m = mapsUrl.match(/@(-?\d+\.\d+),(-?\d+\.\d+)/);
+            const trimmed = String(mapsUrl).trim();
+            let m = trimmed.match(/@(-?\d+\.\d+),(-?\d+\.\d+)/);
             if (m) return `${m[1]},${m[2]}`;
-            m = mapsUrl.match(/!3d(-?\d+\.\d+)!4d(-?\d+\.\d+)/);
+            m = trimmed.match(/!3d(-?\d+\.\d+)!4d(-?\d+\.\d+)/);
             if (m) return `${m[1]},${m[2]}`;
-            m = mapsUrl.match(/[?&]q=(-?\d+\.\d+),(-?\d+\.\d+)/);
+            m = trimmed.match(/[?&]q=(-?\d+\.\d+),(-?\d+\.\d+)/);
+            if (m) return `${m[1]},${m[2]}`;
+            m = trimmed.match(/^(-?\d{1,3}\.\d+),\s*(-?\d{1,3}\.\d+)$/);
             if (m) return `${m[1]},${m[2]}`;
             return null;
         }
@@ -3002,7 +3076,32 @@
             const opt = select && select.selectedIndex >= 0 ? select.options[select.selectedIndex] : null;
             mapOrigin = select ? select.value : '';
             mapOriginLink = opt ? (opt.dataset.link || '') : '';
+
+            const addressGroup = document.getElementById('map-hotel-address-group');
+            const addressInput = document.getElementById('map-hotel-address-input');
+            const progId = opt ? opt.dataset.progId : '';
+            if (addressGroup && addressInput) {
+                if (progId) {
+                    const prog = appData.programme.find(p => p.id === parseInt(progId));
+                    addressGroup.style.display = '';
+                    addressInput.value = (prog && prog.maps) || '';
+                    addressInput.dataset.progId = progId;
+                } else {
+                    addressGroup.style.display = 'none';
+                }
+            }
+
             refreshMapEmbed();
+        }
+
+        function saveHotelMapLink() {
+            const input = document.getElementById('map-hotel-address-input');
+            if (!input || !input.dataset.progId) return;
+            const prog = appData.programme.find(p => p.id === parseInt(input.dataset.progId));
+            if (!prog) return;
+            prog.maps = input.value.trim();
+            saveToLocalStorage();
+            populateHotelMapSelect();
         }
 
         function updateMapFromItinerarySelect() {
@@ -3032,27 +3131,24 @@
         function populateHotelMapSelect() {
             const select = document.getElementById('map-hotel-select');
             if (!select) return;
-            const previousValue = select.value;
+            const previousProgId = select.selectedIndex >= 0 ? select.options[select.selectedIndex].dataset.progId : '';
 
             let html = '<option value="">-- Choisir une destination --</option>';
             (appData.programme || []).forEach(prog => {
                 const nameQuery = `${prog.hotel}, ${prog.ville}, Japon`;
+                const query = extractLatLng(prog.maps) || nameQuery;
                 const rawLink = safeUrl(prog.maps);
-                const query = extractLatLng(rawLink) || nameQuery;
-                html += `<option value="${esc(query)}" data-link="${esc(rawLink)}">${esc(prog.ville)} — ${esc(prog.hotel)}</option>`;
+                html += `<option value="${esc(query)}" data-link="${rawLink}" data-prog-id="${prog.id}">${esc(prog.ville)} — ${esc(prog.hotel)}</option>`;
             });
             select.innerHTML = html;
 
-            if (previousValue && [...select.options].some(o => o.value === previousValue)) {
-                select.value = previousValue;
-                mapOrigin = previousValue;
-                mapOriginLink = select.options[select.selectedIndex].dataset.link || '';
+            const matchIndex = [...select.options].findIndex(o => o.dataset.progId === previousProgId && previousProgId);
+            if (matchIndex >= 0) {
+                select.selectedIndex = matchIndex;
             } else if (!mapOrigin && appData.programme && appData.programme.length > 0) {
                 select.selectedIndex = 1;
-                mapOrigin = select.value;
-                mapOriginLink = select.options[1].dataset.link || '';
             }
-            refreshMapEmbed();
+            updateMapFromHotelSelect();
         }
 
         // Liste toutes les activités déjà renseignées dans Itinéraire (avec heure et
@@ -3068,9 +3164,9 @@
                 const activites = (prog.activites || []).slice().sort((a, b) => (a.date + ' ' + a.heure).localeCompare(b.date + ' ' + b.heure));
                 activites.forEach(act => {
                     const nameQuery = `${act.texte}, ${prog.ville}, Japon`;
+                    const query = extractLatLng(act.lien) || nameQuery;
                     const rawLink = safeUrl(act.lien);
-                    const query = extractLatLng(rawLink) || nameQuery;
-                    html += `<option value="${esc(query)}" data-link="${esc(rawLink)}">${esc(prog.ville)} · ${esc(act.date)} ${esc(act.heure)} — ${esc(act.texte)}</option>`;
+                    html += `<option value="${esc(query)}" data-link="${rawLink}">${esc(prog.ville)} · ${esc(act.date)} ${esc(act.heure)} — ${esc(act.texte)}</option>`;
                 });
             });
             select.innerHTML = html;
@@ -3079,6 +3175,94 @@
                 select.value = previousValue;
                 mapDestinationLink = select.options[select.selectedIndex].dataset.link || '';
             }
+        }
+
+        // --- BILLETS & TICKETS ---
+        function renderBillets() {
+            const list = document.getElementById('billets-list');
+            if (!list) return;
+            list.innerHTML = '';
+
+            if (!appData.billets || appData.billets.length === 0) {
+                list.innerHTML = `<p style="color: var(--text-muted); font-size: 0.9rem; padding: 4px 5px 10px;">Aucun billet enregistré pour l'instant.</p>`;
+                return;
+            }
+
+            appData.billets.forEach(billet => {
+                const lienUrl = safeUrl(billet.lien);
+                const lienHtml = lienUrl ? `<a href="${lienUrl}" target="_blank" rel="noopener" style="color: var(--accent-primary); font-weight:600; text-decoration:underline;">Ouvrir le billet</a>` : '';
+                list.innerHTML += `
+                    <div class="card">
+                        <button class="delete-btn" onclick="deleteItem('billets', ${billet.id})"><i class="fa-solid fa-xmark"></i></button>
+                        <div class="card-header-row" style="margin-bottom: 10px;">
+                            <div class="card-title-group">
+                                <div class="card-icon" style="background-color: #fcebeb; color: var(--accent);"><i class="fa-solid fa-ticket"></i></div>
+                                <div>
+                                    <div class="card-title" style="font-size: 1.1rem;">${esc(billet.nom)}</div>
+                                    ${billet.reference ? `<div class="card-subtitle">Réf. ${esc(billet.reference)}</div>` : ''}
+                                </div>
+                            </div>
+                            ${billet.date ? `<span class="card-date">${esc(billet.date)}</span>` : ''}
+                        </div>
+                        ${billet.notes ? `<div style="font-size: 0.9rem; line-height: 1.5; color: #444; white-space: pre-line; margin-bottom: 8px;">${esc(billet.notes)}</div>` : ''}
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            ${lienHtml || '<span></span>'}
+                            <button onclick="openEditBilletModal(${billet.id})" style="background:none; border:none; color:#bbb; cursor:pointer; font-size:0.95rem;"><i class="fa-solid fa-pen-to-square"></i></button>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        function openAddBilletModal() {
+            document.getElementById('billet-modal-title').innerText = "Ajouter un billet";
+            document.getElementById('billet-edit-id').value = '';
+            document.getElementById('billet-nom').value = '';
+            document.getElementById('billet-date').value = '';
+            document.getElementById('billet-reference').value = '';
+            document.getElementById('billet-lien').value = '';
+            document.getElementById('billet-notes').value = '';
+            openModal('modal-billet');
+        }
+
+        function openEditBilletModal(id) {
+            const billet = appData.billets.find(b => b.id === id);
+            if (!billet) return;
+            document.getElementById('billet-modal-title').innerText = "Modifier le billet";
+            document.getElementById('billet-edit-id').value = billet.id;
+            document.getElementById('billet-nom').value = billet.nom || '';
+            document.getElementById('billet-date').value = billet.date || '';
+            document.getElementById('billet-reference').value = billet.reference || '';
+            document.getElementById('billet-lien').value = billet.lien || '';
+            document.getElementById('billet-notes').value = billet.notes || '';
+            openModal('modal-billet');
+        }
+
+        function saveBillet() {
+            const editId = document.getElementById('billet-edit-id').value;
+            const nom = document.getElementById('billet-nom').value.trim();
+            const date = document.getElementById('billet-date').value.trim();
+            const reference = document.getElementById('billet-reference').value.trim();
+            const lien = document.getElementById('billet-lien').value.trim();
+            const notes = document.getElementById('billet-notes').value.trim();
+            if (!nom) return;
+
+            if (editId) {
+                const billet = appData.billets.find(b => b.id === parseInt(editId));
+                if (billet) {
+                    billet.nom = nom;
+                    billet.date = date;
+                    billet.reference = reference;
+                    billet.lien = lien;
+                    billet.notes = notes;
+                }
+            } else {
+                appData.billets.push({ id: Date.now(), nom: nom, date: date, reference: reference, lien: lien, notes: notes });
+            }
+
+            saveToLocalStorage();
+            renderBillets();
+            closeModal('modal-billet');
         }
 
         function saveInfo() {
@@ -3119,6 +3303,7 @@
                 }
                 if (category === 'budget') updateBudgetUI();
                 if (category === 'infos') renderInfos();
+                if (category === 'billets') renderBillets();
             }
         }
 
@@ -3171,6 +3356,7 @@ function saveProgramme() {
             renderChecklist();
             updateBudgetUI();
             renderInfos();
+            renderBillets();
             fetchExchangeRate();
             // Hide floating + button for day checklists
             updateChecklistAddFloat();
