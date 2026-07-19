@@ -1270,6 +1270,7 @@
                     <iframe id="map-embed-iframe" width="100%" height="220" style="border:0; display:block;" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
                 </div>
                 <p style="font-size:0.78rem; color:var(--text-muted); margin-top:6px;">Le trajet s'affiche automatiquement dès que l'hôtel et une destination sont choisis.</p>
+                <p id="map-resolving-hint" style="display:none; font-size:0.78rem; color: var(--accent-primary); margin-top:4px;">⏳ Recherche du point exact à partir du lien...</p>
 
                 <a id="map-directions-link" href="#" target="_blank" rel="noopener" class="btn-modal save" style="text-align:center; text-decoration:none; display:block; margin-top:12px;">
                     <i class="fa-solid fa-diamond-turn-right"></i>&nbsp; Itinéraire dans Maps
@@ -3035,6 +3036,43 @@
         // sinon un simple point, sinon une vue d'ensemble du Japon. Pour un
         // point unique, le bouton "Itinéraire" ouvre le lien Maps exact
         // enregistré plutôt qu'une recherche par nom, s'il existe.
+        function isShortMapsLink(url) {
+            return /^https?:\/\/(maps\.app\.goo\.gl|goo\.gl\/maps)\//i.test(String(url || '').trim());
+        }
+
+        // Déplie un lien Google Maps raccourci (maps.app.goo.gl) via un proxy
+        // public pour en extraire les coordonnées exactes : le site n'a pas de
+        // serveur pour suivre lui-même la redirection (choix volontaire, pas de
+        // clé API/facturation Google). Best-effort — si le proxy est indisponible
+        // ou trop lent, on reste sur la recherche par nom déjà utilisée.
+        const resolvedLinkCache = {};
+        async function resolveShortLink(url) {
+            const key = String(url || '').trim();
+            if (!key) return null;
+            if (key in resolvedLinkCache) return resolvedLinkCache[key];
+            try {
+                const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(key)}`;
+                const controller = new AbortController();
+                const timeout = setTimeout(() => controller.abort(), 6000);
+                const res = await fetch(proxyUrl, { signal: controller.signal });
+                clearTimeout(timeout);
+                if (!res.ok) throw new Error('proxy error');
+                const data = await res.json();
+                const finalUrl = data && data.status && data.status.url;
+                const coords = extractLatLng(finalUrl);
+                resolvedLinkCache[key] = coords;
+                return coords;
+            } catch (e) {
+                resolvedLinkCache[key] = null;
+                return null;
+            }
+        }
+
+        function setMapResolvingHint(visible) {
+            const hint = document.getElementById('map-resolving-hint');
+            if (hint) hint.style.display = visible ? '' : 'none';
+        }
+
         function refreshMapEmbed() {
             const iframe = document.getElementById('map-embed-iframe');
             const link = document.getElementById('map-directions-link');
@@ -3061,6 +3099,7 @@
             mapOrigin = select ? select.value : '';
             mapOriginLink = opt ? (opt.dataset.link || '') : '';
             refreshMapEmbed();
+            resolveSelectedLinkIfNeeded(select, opt, coords => { mapOrigin = coords; refreshMapEmbed(); });
         }
 
         function updateMapFromItinerarySelect() {
@@ -3069,6 +3108,27 @@
             mapDestination = select ? select.value : '';
             mapDestinationLink = opt ? (opt.dataset.link || '') : '';
             refreshMapEmbed();
+            resolveSelectedLinkIfNeeded(select, opt, coords => { mapDestination = coords; refreshMapEmbed(); });
+        }
+
+        // Si l'option choisie a un lien raccourci non résolu, tente de récupérer
+        // les coordonnées exactes en arrière-plan et met à jour la carte une fois
+        // trouvées (sans bloquer l'affichage immédiat par recherche de nom). Ignore
+        // le résultat si l'utilisateur a changé de sélection entre-temps.
+        function resolveSelectedLinkIfNeeded(select, opt, applyCoords) {
+            if (!opt || !opt.dataset.link || !isShortMapsLink(opt.dataset.link)) return;
+            if (extractLatLng(opt.dataset.link)) return;
+            const key = opt.dataset.link.trim();
+            const stillSelected = () => select && select.options[select.selectedIndex] === opt;
+            if (key in resolvedLinkCache) {
+                if (resolvedLinkCache[key] && stillSelected()) applyCoords(resolvedLinkCache[key]);
+                return;
+            }
+            setMapResolvingHint(true);
+            resolveShortLink(opt.dataset.link).then(coords => {
+                setMapResolvingHint(false);
+                if (coords && stillSelected()) applyCoords(coords);
+            });
         }
 
         function populateHotelMapSelect() {
