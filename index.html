@@ -4204,10 +4204,11 @@
 
             let html = '<option value="">-- Choisir une activité --</option>';
             (appData.programme || []).forEach(prog => {
-                const activites = (prog.activites || []).slice().sort((a, b) => (a.date + ' ' + a.heure).localeCompare(b.date + ' ' + b.heure));
+                const activites = (prog.activites || [])
+                    .filter(act => mapsOpenLink(act.lien)) // uniquement les activités avec un lien Maps ou des coordonnées renseignés
+                    .slice().sort((a, b) => (a.date + ' ' + a.heure).localeCompare(b.date + ' ' + b.heure));
                 activites.forEach(act => {
-                    const nameQuery = `${act.texte}, ${prog.ville}, Japon`;
-                    const query = extractLatLng(act.lien) || nameQuery;
+                    const query = extractLatLng(act.lien) || `${act.texte}, ${prog.ville}, Japon`;
                     const rawLink = safeUrl(act.lien);
                     html += `<option value="${esc(query)}" data-link="${rawLink}">${esc(prog.ville)} · ${esc(act.date)} ${esc(act.heure)} — ${esc(act.texte)}</option>`;
                 });
