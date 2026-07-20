@@ -968,6 +968,8 @@
         body:not(.is-editor) button:has(.fa-pen-to-square),
         body:not(.is-editor) .people-chip button,
         body:not(.is-editor) #budget-people-add-row,
+        body:not(.is-editor) .jour-checklist-add-row,
+        body:not(.is-editor) .inline-day-activite-add-row,
         body:not(.is-editor) button[onclick*="addInlineDayActivite"],
         body:not(.is-editor) button[onclick*="addDayToDestination"],
         body:not(.is-editor) button[onclick*="addJourCheckItemGlobal"],
@@ -3449,7 +3451,7 @@
                             </div>
                             <div style="display: ${dayIsExpanded ? 'block' : 'none'}; padding: 0 14px 14px;">
                                 ${activitesHtml}
-                                <div style="display:flex; gap:6px; margin-top:10px; flex-wrap:wrap;" onclick="event.stopPropagation();">
+                                <div class="inline-day-activite-add-row" style="display:flex; gap:6px; margin-top:10px; flex-wrap:wrap;" onclick="event.stopPropagation();">
                                     <input type="text" id="inline-act-heure-${idSuffix}" placeholder="Heure" style="flex:1; min-width:64px; padding:7px 10px; border:1.5px solid #ddd; border-radius:8px; font-size:0.85rem;">
                                     <input type="text" id="inline-act-texte-${idSuffix}" placeholder="Activité" style="flex:2; min-width:100px; padding:7px 10px; border:1.5px solid #ddd; border-radius:8px; font-size:0.85rem;">
                                     <input type="text" id="inline-act-lien-${idSuffix}" placeholder="Lien Maps ou coordonnées" style="flex:2; min-width:100px; padding:7px 10px; border:1.5px solid #ddd; border-radius:8px; font-size:0.85rem;">
