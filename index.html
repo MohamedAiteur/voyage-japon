@@ -2567,7 +2567,7 @@
                             `;
                             return;
                         }
-                        const actUrl = safeUrl(act.lien);
+                        const actUrl = mapsOpenLink(act.lien);
                         const linkBtn = actUrl
                             ? `<a href="${actUrl}" target="_blank" rel="noopener" class="activity-link-btn" style="display:inline-flex; align-items:center; justify-content:center; width:26px; height:26px; border-radius:50%; background:var(--accent-primary); color:white; text-decoration:none; font-size:0.75rem; flex-shrink:0;" title="Voir sur la carte : ${actUrl}">📍</a>`
                             : `<span style="display:inline-block; width:26px; flex-shrink:0;"></span>`;
@@ -2618,7 +2618,7 @@
                 });
             }
 
-            const progMapsUrl = safeUrl(prog.maps);
+            const progMapsUrl = mapsOpenLink(prog.maps);
             const mapsHtml = progMapsUrl ? `<a href="${progMapsUrl}" target="_blank" rel="noopener" style="display:inline-block; margin-top: 10px; color: var(--accent-primary); font-weight: 600; font-size: 0.85rem;">📍 Voir sur Google Maps</a>` : '';
 
             container.innerHTML = `
@@ -3041,6 +3041,17 @@
                 }
             }
             return null;
+        }
+
+        // Construit un lien "ouvrir dans Maps" cliquable à partir d'un champ
+        // lien/coordonnées : un vrai lien collé est utilisé tel quel, des
+        // coordonnées collées (ex: 34.9671, 135.7727) sont transformées en lien
+        // d'itinéraire Google Maps valide plutôt que d'être ignorées.
+        function mapsOpenLink(value) {
+            const url = safeUrl(value);
+            if (url) return url;
+            const coords = extractLatLng(value);
+            return coords ? esc(buildDirectionsUrl(coords)) : '';
         }
 
         // Recalcule la carte : trajet si hôtel + destination sont choisis,
