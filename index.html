@@ -7,10 +7,13 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Japon 2026">
-    <link rel="apple-touch-icon" href="https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?q=80&w=180&auto=format&fit=crop">
-    
+    <meta name="theme-color" content="#d9678a">
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="images/icon-192.png">
+    <link rel="icon" type="image/png" href="images/icon-192.png">
+
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
+
     <style>
         :root {
             --bg-color: #f7f7f7;
@@ -788,32 +791,48 @@
             background-color: #e5e5e5;
         }
 
-        .planned-budget-header {
+        .budget-summary-row {
             display: flex;
-            justify-content: space-between;
-            align-items: center;
+            gap: 10px;
             margin-bottom: 15px;
         }
 
-        .budget-badge {
-            background-color: #e8eae9;
-            padding: 6px 14px;
-            border-radius: 15px;
-            font-weight: 750;
-            font-size: 1rem;
-            color: #4a5d51;
+        .budget-stat {
+            flex: 1;
+            background-color: var(--card-bg);
+            border-radius: 14px;
+            padding: 12px 8px;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.01);
+        }
+
+        .budget-stat-value {
+            font-size: 1.15rem;
+            font-weight: 850;
+        }
+
+        .budget-stat-label {
+            font-size: 0.72rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            color: var(--text-muted);
+            margin-top: 2px;
         }
 
         .expense-card {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 18px;
+            padding: 16px 18px;
             background-color: var(--card-bg);
             border-radius: 15px;
             margin-bottom: 12px;
             position: relative;
             box-shadow: 0 2px 10px rgba(0,0,0,0.01);
+        }
+
+        .expense-card-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
 
         .expense-info h4 {
@@ -836,6 +855,32 @@
         .expense-eur {
             font-size: 1.15rem;
             font-weight: 850;
+        }
+
+        .expense-card-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 12px;
+            padding-top: 10px;
+            border-top: 1px dashed #eee;
+        }
+
+        .expense-paid-pill {
+            border: 1.5px solid #ddd;
+            background: transparent;
+            color: var(--text-muted);
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.78rem;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .expense-paid-pill.paid {
+            border-color: var(--accent-primary);
+            background: var(--accent-primary);
+            color: white;
         }
 
         .btn-add-float {
@@ -1029,7 +1074,7 @@
             flex-shrink: 0;
         }
         .activity-link-btn:hover {
-            background: #1a6b3c;
+            filter: brightness(0.88);
         }
         .checklist-selector-bar {
             display: flex;
@@ -1127,6 +1172,97 @@
             font-weight: 700;
         }
 
+        .today-card {
+            background: var(--accent-primary);
+            background-image: linear-gradient(135deg, rgba(255,255,255,0.12), rgba(0,0,0,0.12));
+            color: white;
+        }
+
+        .today-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 14px;
+        }
+
+        .today-card-title {
+            font-size: 1.25rem;
+            font-weight: 800;
+            text-transform: capitalize;
+        }
+
+        .today-card-subtitle {
+            font-size: 0.85rem;
+            color: rgba(255,255,255,0.85);
+            font-weight: 500;
+            margin-top: 2px;
+            text-transform: capitalize;
+        }
+
+        .today-card-weather {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 1.3rem;
+            font-weight: 800;
+            background: rgba(255,255,255,0.18);
+            border-radius: 14px;
+            padding: 6px 12px;
+            white-space: nowrap;
+        }
+
+        .today-card-weather-temp {
+            font-size: 1rem;
+        }
+
+        .today-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: rgba(255,255,255,0.15);
+            border-radius: 14px;
+            padding: 12px 14px;
+            margin-bottom: 8px;
+        }
+
+        .today-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .today-item-icon {
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.25);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            font-size: 0.9rem;
+        }
+
+        .today-item-body {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .today-item-label {
+            font-weight: 700;
+            font-size: 0.95rem;
+        }
+
+        .today-item-sub {
+            font-size: 0.8rem;
+            color: rgba(255,255,255,0.8);
+            font-weight: 500;
+        }
+
+        .today-item-time {
+            font-weight: 800;
+            font-size: 0.95rem;
+            flex-shrink: 0;
+        }
+
     </style>
 </head>
 <body>
@@ -1156,6 +1292,8 @@
         </div>
 
         <div class="content-container" style="margin-top: 20px;">
+            <div id="today-card-container"></div>
+
             <h2 class="section-title">Vols</h2>
             <div id="vols-list"></div>
 
@@ -1227,14 +1365,25 @@
                 <button class="key" onclick="pressKey('delete')"><i class="fa-solid fa-delete-left"></i></button>
             </div>
 
-            <div class="planned-budget-header">
-                <h2 class="section-title" style="margin:0;">Dépenses prévues</h2>
-                <div class="budget-badge" id="total-budget-badge">0.00 €</div>
+            <h2 class="section-title" style="margin-bottom: 10px;">Dépenses prévues</h2>
+            <div class="budget-summary-row">
+                <div class="budget-stat">
+                    <div class="budget-stat-value" id="budget-total-planned">0 €</div>
+                    <div class="budget-stat-label">Prévu</div>
+                </div>
+                <div class="budget-stat">
+                    <div class="budget-stat-value" id="budget-total-paid">0 €</div>
+                    <div class="budget-stat-label">Payé</div>
+                </div>
+                <div class="budget-stat">
+                    <div class="budget-stat-value" id="budget-total-remaining">0 €</div>
+                    <div class="budget-stat-label">Restant</div>
+                </div>
             </div>
 
             <div id="expenses-list"></div>
         </div>
-        <button class="btn-add-float" onclick="openModal('modal-budget')"><i class="fa-solid fa-plus"></i></button>
+        <button class="btn-add-float" onclick="openAddBudgetModal()"><i class="fa-solid fa-plus"></i></button>
     </div>
 
     <!-- ================= INFOS ================= -->
@@ -1468,7 +1617,7 @@
         <div class="modal-content">
             <h3>Qu'est-ce que tu veux ajouter ?</h3>
             <div class="modal-buttons" style="flex-direction: column; gap: 12px;">
-                <button class="btn-modal save" style="background-color: var(--accent-primary); display:flex; align-items:center; justify-content:center; gap:10px;" onclick="closeModal('modal-choose-info-type'); openModal('modal-infos');">
+                <button class="btn-modal save" style="background-color: var(--accent-primary); display:flex; align-items:center; justify-content:center; gap:10px;" onclick="closeModal('modal-choose-info-type'); openAddInfoModal();">
                     <i class="fa-solid fa-circle-info"></i> Une info
                 </button>
                 <button class="btn-modal save" style="background-color: var(--accent-primary); display:flex; align-items:center; justify-content:center; gap:10px;" onclick="closeModal('modal-choose-info-type'); openAddBilletModal();">
@@ -1659,7 +1808,8 @@
     <!-- Modal Budget -->
     <div class="modal" id="modal-budget">
         <div class="modal-content">
-            <h3>Ajouter une dépense</h3>
+            <h3 id="budget-modal-title">Ajouter une dépense</h3>
+            <input type="hidden" id="bud-edit-id" value="">
             <div class="input-group">
                 <label>Nom de la dépense</label>
                 <input type="text" id="bud-name" placeholder="Ex: Disney">
@@ -1667,6 +1817,21 @@
             <div class="input-group">
                 <label>Montant en Euros (€)</label>
                 <input type="number" id="bud-amount" placeholder="Ex: 212">
+            </div>
+            <div class="input-group">
+                <label>Catégorie</label>
+                <select id="bud-cat">
+                    <option value="Transport">🚆 Transport</option>
+                    <option value="Hébergement">🏨 Hébergement</option>
+                    <option value="Activités & Billets">🎟️ Activités & Billets</option>
+                    <option value="Nourriture">🍜 Nourriture</option>
+                    <option value="Shopping">🛍️ Shopping</option>
+                    <option value="Autre">✨ Autre</option>
+                </select>
+            </div>
+            <div class="input-group" style="display:flex; align-items:center; gap:10px; margin-bottom:0;">
+                <input type="checkbox" id="bud-paid" style="width:20px; height:20px;">
+                <label style="margin-bottom:0;" for="bud-paid">Déjà payé</label>
             </div>
             <div class="modal-buttons">
                 <button class="btn-modal cancel" onclick="closeModal('modal-budget')">Annuler</button>
@@ -1678,7 +1843,8 @@
     <!-- Modal Infos -->
     <div class="modal" id="modal-infos">
         <div class="modal-content">
-            <h3>Ajouter une info utile</h3>
+            <h3 id="info-modal-title">Ajouter une info utile</h3>
+            <input type="hidden" id="info-edit-id" value="">
             <div class="input-group">
                 <label>Type d'information (Titre)</label>
                 <input type="text" id="info-title" placeholder="Ex: JR Pass ou Adresses hôtels">
@@ -1729,6 +1895,221 @@
                     ${month ? `<span class="date-badge-month">${esc(month)}</span>` : ''}
                 </div>
             `;
+        }
+
+        // --- CARTE "AUJOURD'HUI" (Accueil) : convertit les dates en texte libre
+        // ("31 août", "1er sept.") en vraies dates pour trouver ce qui se passe
+        // aujourd'hui (ou le prochain événement) parmi vols/trains/activités.
+        function stripAccents(str) {
+            return String(str).normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+        }
+
+        const FR_MONTHS = [
+            ['janv', 0], ['fevr', 1], ['mars', 2], ['avr', 3], ['mai', 4],
+            ['juin', 5], ['juil', 6], ['aout', 7], ['sept', 8], ['oct', 9], ['nov', 10], ['dec', 11]
+        ];
+
+        function parseFrenchShortDate(dateStr, year) {
+            if (!dateStr) return null;
+            const cleaned = stripAccents(String(dateStr).toLowerCase()).replace(/[^a-z0-9\s]/g, ' ');
+            const m = cleaned.match(/(\d{1,2})\s*(?:er)?\s+([a-z]+)/);
+            if (!m) return null;
+            const day = parseInt(m[1], 10);
+            const monthWord = m[2];
+            const found = FR_MONTHS.find(([prefix]) => monthWord.startsWith(prefix) || prefix.startsWith(monthWord));
+            if (!found || day < 1 || day > 31) return null;
+            const d = new Date(year, found[1], day);
+            return isNaN(d.getTime()) ? null : d;
+        }
+
+        function tripYear() {
+            const y = parseInt(String((appData && appData.tripStart) || '').slice(0, 4), 10);
+            return isNaN(y) ? new Date().getFullYear() : y;
+        }
+
+        function timeSortKey(str) {
+            const digits = String(str || '').replace(/\D/g, '');
+            if (!digits) return '9999';
+            return digits.length <= 3 ? ('0' + digits).slice(-4) : digits.slice(0, 4);
+        }
+
+        function isSameDay(a, b) {
+            return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
+        }
+
+        function collectScheduleItems() {
+            const year = tripYear();
+            const items = [];
+            (appData.vols || []).forEach(v => {
+                const d = parseFrenchShortDate(v.date, year);
+                if (d) items.push({ date: d, time: v.depTime || '', sortKey: timeSortKey(v.depTime), icon: 'fa-plane', label: `${v.depCity || ''} → ${v.arrCity || ''}`, sub: `Vol ${v.num1 || ''}` });
+            });
+            (appData.transports || []).forEach(t => {
+                const d = parseFrenchShortDate(t.date, year);
+                if (d) items.push({ date: d, time: t.depTime || '', sortKey: timeSortKey(t.depTime), icon: 'fa-train', label: `${t.depStation || ''} → ${t.arrStation || ''}`, sub: t.train || t.type || '' });
+            });
+            (appData.programme || []).forEach(prog => {
+                (prog.activites || []).forEach(act => {
+                    const d = parseFrenchShortDate(act.date, year);
+                    if (d) items.push({ date: d, time: act.heure || '', sortKey: timeSortKey(act.heure), icon: 'fa-location-dot', label: act.texte || '', sub: prog.ville || '' });
+                });
+            });
+            return items;
+        }
+
+        // Destination du Programme dont la plage de dates couvre aujourd'hui,
+        // sinon la prochaine à venir — utilisée pour la météo locale.
+        function getCurrentOrNextDestination() {
+            const year = tripYear();
+            const now = new Date();
+            const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+            let current = null, next = null, nextStart = null;
+            (appData.programme || []).forEach(prog => {
+                const start = parseFrenchShortDate(prog.dateStart, year);
+                const end = parseFrenchShortDate(prog.dateEnd, year);
+                if (!start || !end) return;
+                const startDay = new Date(start.getFullYear(), start.getMonth(), start.getDate());
+                const endDay = new Date(end.getFullYear(), end.getMonth(), end.getDate());
+                if (today >= startDay && today <= endDay) current = prog;
+                else if (startDay > today && (!nextStart || startDay < nextStart)) { next = prog; nextStart = startDay; }
+            });
+            return current || next;
+        }
+
+        function renderTodayCard() {
+            const container = document.getElementById('today-card-container');
+            if (!container) return;
+            const items = collectScheduleItems();
+            if (items.length === 0) { container.innerHTML = ''; return; }
+
+            const now = new Date();
+            const todayItems = items.filter(i => isSameDay(i.date, now)).sort((a, b) => a.sortKey.localeCompare(b.sortKey));
+
+            let title, subtitle, showItems;
+            if (todayItems.length > 0) {
+                title = "Aujourd'hui";
+                subtitle = now.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
+                showItems = todayItems;
+            } else {
+                const todayMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+                const future = items.filter(i => i.date.getTime() > todayMidnight.getTime()).sort((a, b) => a.date - b.date || a.sortKey.localeCompare(b.sortKey));
+                if (future.length === 0) { container.innerHTML = ''; return; }
+                const nextDate = future[0].date;
+                showItems = future.filter(i => isSameDay(i.date, nextDate)).sort((a, b) => a.sortKey.localeCompare(b.sortKey));
+                const diffDays = Math.round((new Date(nextDate.getFullYear(), nextDate.getMonth(), nextDate.getDate()) - todayMidnight) / 86400000);
+                title = diffDays === 1 ? "Demain" : `Dans ${diffDays} jours`;
+                subtitle = nextDate.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
+            }
+
+            const itemsHtml = showItems.map(i => `
+                <div class="today-item">
+                    <div class="today-item-icon"><i class="fa-solid ${i.icon}"></i></div>
+                    <div class="today-item-body">
+                        <div class="today-item-label">${esc(i.label)}</div>
+                        ${i.sub ? `<div class="today-item-sub">${esc(i.sub)}</div>` : ''}
+                    </div>
+                    ${i.time ? `<div class="today-item-time">${esc(i.time)}</div>` : ''}
+                </div>
+            `).join('');
+
+            container.innerHTML = `
+                <div class="card today-card">
+                    <div class="today-card-header">
+                        <div>
+                            <div class="today-card-title">${esc(title)}</div>
+                            <div class="today-card-subtitle">${esc(subtitle)}</div>
+                        </div>
+                        <div class="today-card-weather" id="today-card-weather" style="display:none;"></div>
+                    </div>
+                    ${itemsHtml}
+                </div>
+            `;
+
+            fetchAndShowWeather();
+        }
+
+        // --- MÉTÉO DU JOUR (sans clé API — Open-Meteo) ---
+        const WEATHER_ICONS = {
+            0: '☀️', 1: '🌤️', 2: '⛅', 3: '☁️',
+            45: '🌫️', 48: '🌫️',
+            51: '🌦️', 53: '🌦️', 55: '🌦️', 56: '🌧️', 57: '🌧️',
+            61: '🌧️', 63: '🌧️', 65: '🌧️', 66: '🌧️', 67: '🌧️',
+            71: '🌨️', 73: '🌨️', 75: '🌨️', 77: '🌨️',
+            80: '🌦️', 81: '🌦️', 82: '🌧️', 85: '🌨️', 86: '🌨️',
+            95: '⛈️', 96: '⛈️', 99: '⛈️'
+        };
+
+        const JAPAN_CITY_COORDS = {
+            'tokyo': [35.6762, 139.6503],
+            'osaka': [34.6937, 135.5023],
+            'kyoto': [35.0116, 135.7681],
+            'nara': [34.6851, 135.8048],
+            'hiroshima': [34.3853, 132.4553],
+            'fukuoka': [33.5904, 130.4017],
+            'sapporo': [43.0618, 141.3545],
+            'nagoya': [35.1815, 136.9066],
+            'yokohama': [35.4437, 139.6380],
+            'kobe': [34.6901, 135.1955],
+            'kanazawa': [36.5613, 136.6562],
+            'nikko': [36.7199, 139.6982],
+            'hakone': [35.2325, 139.1069],
+            'kamakura': [35.3193, 139.5466],
+            'nagano': [36.6513, 138.1810],
+            'takayama': [36.1461, 137.2521],
+            'naha': [26.2124, 127.6809],
+            'okinawa': [26.2124, 127.6809],
+            'beppu': [33.2846, 131.4914],
+            'kumamoto': [32.7898, 130.7417],
+            'nagasaki': [32.7503, 129.8779],
+            'sendai': [38.2682, 140.8694],
+            'himeji': [34.8394, 134.6939]
+        };
+
+        const weatherCache = {};
+
+        function findCityCoords(ville) {
+            if (!ville) return null;
+            const key = stripAccents(String(ville).toLowerCase().trim());
+            if (JAPAN_CITY_COORDS[key]) return JAPAN_CITY_COORDS[key];
+            const found = Object.keys(JAPAN_CITY_COORDS).find(k => key.includes(k) || k.includes(key));
+            return found ? JAPAN_CITY_COORDS[found] : null;
+        }
+
+        function showWeatherBadge(badge, weather) {
+            if (!weather || !document.body.contains(badge)) return;
+            const icon = WEATHER_ICONS[weather.code] || '🌡️';
+            badge.innerHTML = `<span>${icon}</span><span class="today-card-weather-temp">${weather.temp}°C</span>`;
+            badge.style.display = '';
+        }
+
+        async function fetchAndShowWeather() {
+            const badge = document.getElementById('today-card-weather');
+            if (!badge) return;
+            const dest = getCurrentOrNextDestination();
+            const coords = dest ? findCityCoords(dest.ville) : null;
+            if (!coords) return;
+
+            const cacheKey = coords.join(',');
+            if (cacheKey in weatherCache) {
+                showWeatherBadge(badge, weatherCache[cacheKey]);
+                return;
+            }
+            try {
+                const [lat, lon] = coords;
+                const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,weather_code&timezone=Asia%2FTokyo`;
+                const controller = new AbortController();
+                const timeout = setTimeout(() => controller.abort(), 6000);
+                const res = await fetch(url, { signal: controller.signal });
+                clearTimeout(timeout);
+                if (!res.ok) throw new Error('weather error');
+                const data = await res.json();
+                if (!data.current) throw new Error('no data');
+                const weather = { temp: Math.round(data.current.temperature_2m), code: data.current.weather_code };
+                weatherCache[cacheKey] = weather;
+                showWeatherBadge(badge, weather);
+            } catch (e) {
+                weatherCache[cacheKey] = null;
+            }
         }
 
         // Pré-remplissage complet des vols Qatar Airways avec escales et détails réels
@@ -1880,6 +2261,7 @@
             buildChecklistSelector();
             updateChecklistAddFloat();
             updateCountdown();
+            renderTodayCard();
             renderVols();
             renderTransports();
             renderProgramme();
@@ -2567,7 +2949,7 @@
                             `;
                             return;
                         }
-                        const actUrl = safeUrl(act.lien);
+                        const actUrl = mapsOpenLink(act.lien);
                         const linkBtn = actUrl
                             ? `<a href="${actUrl}" target="_blank" rel="noopener" class="activity-link-btn" style="display:inline-flex; align-items:center; justify-content:center; width:26px; height:26px; border-radius:50%; background:var(--accent-primary); color:white; text-decoration:none; font-size:0.75rem; flex-shrink:0;" title="Voir sur la carte : ${actUrl}">📍</a>`
                             : `<span style="display:inline-block; width:26px; flex-shrink:0;"></span>`;
@@ -2618,7 +3000,7 @@
                 });
             }
 
-            const progMapsUrl = safeUrl(prog.maps);
+            const progMapsUrl = mapsOpenLink(prog.maps);
             const mapsHtml = progMapsUrl ? `<a href="${progMapsUrl}" target="_blank" rel="noopener" style="display:inline-block; margin-top: 10px; color: var(--accent-primary); font-weight: 600; font-size: 0.85rem;">📍 Voir sur Google Maps</a>` : '';
 
             container.innerHTML = `
@@ -2798,13 +3180,7 @@
             if (item) {
                 item.checked = !item.checked;
                 saveToLocalStorage();
-                // Refresh the view modal if open
-                const editId = document.getElementById('prog-edit-id').value;
-                if (editId && parseInt(editId) === progId) {
-                    // re-render the mini checklist in the modal
-                    const detailProg = appData.programme.find(p => p.id === progId);
-                    if (detailProg) renderJourChecklistInModal(progId, detailProg);
-                }
+                if (currentChecklistScope === progId) renderChecklist();
             }
         }
 
@@ -2813,53 +3189,8 @@
             if (confirm("Voulez-vous vraiment supprimer cet élément ?")) {
                 appData.checklistsJour[progId] = appData.checklistsJour[progId].filter(i => i.id !== itemId);
                 saveToLocalStorage();
-                const editId = document.getElementById('prog-edit-id').value;
-                if (editId && parseInt(editId) === progId) {
-                    const detailProg = appData.programme.find(p => p.id === progId);
-                    if (detailProg) renderJourChecklistInModal(progId, detailProg);
-                }
+                if (currentChecklistScope === progId) renderChecklist();
             }
-        }
-
-        function renderJourChecklistInModal(progId, prog) {
-            const container = document.getElementById('jour-checklist-container');
-            if (!container) return;
-            if (!appData.checklistsJour) appData.checklistsJour = {};
-            if (!appData.checklistsJour[progId]) appData.checklistsJour[progId] = [];
-            const items = appData.checklistsJour[progId];
-
-            let html = '';
-            items.forEach(item => {
-                html += `
-                    <div class="jour-checklist-item ${item.checked ? 'checked' : ''}">
-                        <input type="checkbox" class="checkbox-round" ${item.checked ? 'checked' : ''} onclick="toggleCheckJour(${progId}, ${item.id})">
-                        <span class="checklist-label" style="flex:1;">${esc(item.texte)}</span>
-                        <button class="delete-btn" onclick="deleteItemJour(${progId}, ${item.id})" style="top:18px; right:15px; position:relative;"><i class="fa-solid fa-xmark"></i></button>
-                    </div>
-                `;
-            });
-            html += `
-                <div class="jour-checklist-add-row">
-                    <input type="text" id="jour-check-new-text" placeholder="Ajouter un élément...">
-                    <button onclick="addJourCheckItem(${progId})">+</button>
-                </div>
-            `;
-            container.innerHTML = html;
-        }
-
-        function addJourCheckItem(progId) {
-            const texte = document.getElementById('jour-check-new-text').value.trim();
-            if (!texte) return;
-            if (!appData.checklistsJour[progId]) appData.checklistsJour[progId] = [];
-            appData.checklistsJour[progId].push({
-                id: Date.now(),
-                texte: texte,
-                checked: false
-            });
-            document.getElementById('jour-check-new-text').value = '';
-            saveToLocalStorage();
-            const detailProg = appData.programme.find(p => p.id === progId);
-            if (detailProg) renderJourChecklistInModal(progId, detailProg);
         }
 
         // --- BUDGET ---
@@ -2890,26 +3221,37 @@
 
             const list = document.getElementById('expenses-list');
             list.innerHTML = '';
-            let totalEur = 0;
+            let totalEur = 0, paidEur = 0;
 
             appData.budget.forEach(exp => {
                 const eqJpy = Math.round(exp.eur * TAUX_CHANGE);
                 totalEur += exp.eur;
+                if (exp.paid) paidEur += exp.eur;
+                const cat = exp.categorie || 'Autre';
+                const icon = budgetCategoryIcons[cat] || budgetCategoryIcons['Autre'];
                 list.innerHTML += `
                     <div class="expense-card">
-                        <button class="delete-btn" onclick="deleteItem('budget', ${exp.id})" style="top: 18px; right: 15px;"><i class="fa-solid fa-xmark"></i></button>
-                        <div class="expense-info">
-                            <h4>${esc(exp.nom)}</h4>
-                            <p>¥ ${eqJpy.toLocaleString('fr-FR')}</p>
+                        <button class="delete-btn" onclick="deleteItem('budget', ${exp.id})" style="top: 16px; right: 15px;"><i class="fa-solid fa-xmark"></i></button>
+                        <div class="expense-card-top">
+                            <div class="expense-info">
+                                <h4>${esc(exp.nom)}</h4>
+                                <p><i class="fa-solid ${icon}" style="margin-right:4px;"></i>${esc(cat)} · ¥ ${eqJpy.toLocaleString('fr-FR')}</p>
+                            </div>
+                            <div class="expense-amounts">
+                                <span class="expense-eur">${exp.eur.toFixed(2)} €</span>
+                            </div>
                         </div>
-                        <div class="expense-amounts">
-                            <span class="expense-eur">${exp.eur.toFixed(2)} €</span>
+                        <div class="expense-card-footer">
+                            <button class="expense-paid-pill ${exp.paid ? 'paid' : ''}" onclick="toggleBudgetPaid(${exp.id})">${exp.paid ? '✓ Payé' : 'À payer'}</button>
+                            <button onclick="openEditBudgetModal(${exp.id})" style="background:none; border:none; color:#bbb; cursor:pointer; font-size:0.95rem;"><i class="fa-solid fa-pen-to-square"></i></button>
                         </div>
                     </div>
                 `;
             });
 
-            document.getElementById('total-budget-badge').innerText = totalEur.toFixed(2) + ' €';
+            document.getElementById('budget-total-planned').innerText = totalEur.toFixed(2) + ' €';
+            document.getElementById('budget-total-paid').innerText = paidEur.toFixed(2) + ' €';
+            document.getElementById('budget-total-remaining').innerText = (totalEur - paidEur).toFixed(2) + ' €';
         }
 
         function formatNumberString(str) {
@@ -2935,15 +3277,68 @@
             updateBudgetUI();
         }
 
+        const budgetCategoryIcons = {
+            'Transport': 'fa-train',
+            'Hébergement': 'fa-bed',
+            'Activités & Billets': 'fa-ticket',
+            'Nourriture': 'fa-utensils',
+            'Shopping': 'fa-bag-shopping',
+            'Autre': 'fa-circle-dot'
+        };
+
+        function openAddBudgetModal() {
+            document.getElementById('budget-modal-title').innerText = "Ajouter une dépense";
+            document.getElementById('bud-edit-id').value = '';
+            document.getElementById('bud-name').value = '';
+            document.getElementById('bud-amount').value = '';
+            document.getElementById('bud-cat').value = 'Autre';
+            document.getElementById('bud-paid').checked = false;
+            openModal('modal-budget');
+        }
+
+        function openEditBudgetModal(id) {
+            const exp = appData.budget.find(e => e.id === id);
+            if (!exp) return;
+            document.getElementById('budget-modal-title').innerText = "Modifier la dépense";
+            document.getElementById('bud-edit-id').value = exp.id;
+            document.getElementById('bud-name').value = exp.nom || '';
+            document.getElementById('bud-amount').value = exp.eur;
+            document.getElementById('bud-cat').value = exp.categorie || 'Autre';
+            document.getElementById('bud-paid').checked = !!exp.paid;
+            openModal('modal-budget');
+        }
+
+        function toggleBudgetPaid(id) {
+            const exp = appData.budget.find(e => e.id === id);
+            if (!exp) return;
+            exp.paid = !exp.paid;
+            saveToLocalStorage();
+            updateBudgetUI();
+        }
+
         function saveBudget() {
+            const editId = document.getElementById('bud-edit-id').value;
             const nom = document.getElementById('bud-name').value.trim();
             const amount = parseFloat(document.getElementById('bud-amount').value);
+            const categorie = document.getElementById('bud-cat').value;
+            const paid = document.getElementById('bud-paid').checked;
             if (!nom || isNaN(amount)) return;
 
-            appData.budget.push({ id: Date.now(), nom: nom, eur: amount });
+            if (editId) {
+                const exp = appData.budget.find(e => e.id === parseInt(editId));
+                if (exp) {
+                    exp.nom = nom;
+                    exp.eur = amount;
+                    exp.categorie = categorie;
+                    exp.paid = paid;
+                }
+            } else {
+                appData.budget.push({ id: Date.now(), nom: nom, eur: amount, categorie: categorie, paid: paid });
+            }
             saveToLocalStorage();
             updateBudgetUI();
 
+            document.getElementById('bud-edit-id').value = '';
             document.getElementById('bud-name').value = '';
             document.getElementById('bud-amount').value = '';
             closeModal('modal-budget');
@@ -2982,12 +3377,35 @@
                             </div>
                         </div>
                         <div style="font-size: 0.95rem; line-height: 1.5; color: #444; white-space: pre-line; font-weight: 500;">${esc(info.desc)}</div>
+                        <div style="text-align:right; margin-top: 10px;">
+                            <button onclick="openEditInfoModal(${info.id})" class="details-link" style="border: 1.5px solid var(--accent-primary); border-radius: 20px; padding: 6px 16px;">
+                                <i class="fa-solid fa-pen-to-square"></i> Modifier
+                            </button>
+                        </div>
                     </div>
                 `;
             });
 
             populateHotelMapSelect();
             populateItineraryMapSelect();
+        }
+
+        function openAddInfoModal() {
+            document.getElementById('info-modal-title').innerText = "Ajouter une info utile";
+            document.getElementById('info-edit-id').value = '';
+            document.getElementById('info-title').value = '';
+            document.getElementById('info-desc').value = '';
+            openModal('modal-infos');
+        }
+
+        function openEditInfoModal(id) {
+            const info = appData.infos.find(i => i.id === id);
+            if (!info) return;
+            document.getElementById('info-modal-title').innerText = "Modifier l'info";
+            document.getElementById('info-edit-id').value = info.id;
+            document.getElementById('info-title').value = info.titre || '';
+            document.getElementById('info-desc').value = info.desc || '';
+            openModal('modal-infos');
         }
 
         // --- CARTE & ADRESSES (sans clé API — iframe Google Maps publique) ---
@@ -3041,6 +3459,17 @@
                 }
             }
             return null;
+        }
+
+        // Construit un lien "ouvrir dans Maps" cliquable à partir d'un champ
+        // lien/coordonnées : un vrai lien collé est utilisé tel quel, des
+        // coordonnées collées (ex: 34.9671, 135.7727) sont transformées en lien
+        // d'itinéraire Google Maps valide plutôt que d'être ignorées.
+        function mapsOpenLink(value) {
+            const url = safeUrl(value);
+            if (url) return url;
+            const coords = extractLatLng(value);
+            return coords ? esc(buildDirectionsUrl(coords)) : '';
         }
 
         // Recalcule la carte : trajet si hôtel + destination sont choisis,
@@ -3286,14 +3715,24 @@
         }
 
         function saveInfo() {
+            const editId = document.getElementById('info-edit-id').value;
             const titre = document.getElementById('info-title').value.trim();
             const desc = document.getElementById('info-desc').value.trim();
             if (!titre) return;
 
-            appData.infos.push({ id: Date.now(), titre: titre, desc: desc });
+            if (editId) {
+                const info = appData.infos.find(i => i.id === parseInt(editId));
+                if (info) {
+                    info.titre = titre;
+                    info.desc = desc;
+                }
+            } else {
+                appData.infos.push({ id: Date.now(), titre: titre, desc: desc });
+            }
             saveToLocalStorage();
             renderInfos();
 
+            document.getElementById('info-edit-id').value = '';
             document.getElementById('info-title').value = '';
             document.getElementById('info-desc').value = '';
             closeModal('modal-infos');
@@ -3369,6 +3808,7 @@ function saveProgramme() {
         window.onload = function() {
             document.body.dataset.page = 'accueil';
             updateCountdown();
+            renderTodayCard();
             renderVols();
             renderTransports();
             renderProgramme();
@@ -3456,6 +3896,15 @@ function saveProgramme() {
                 window.saveToCloud(window.appData);
             }
         });
+    </script>
+
+    <!-- ================= SERVICE WORKER (hors-ligne) ================= -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('sw.js').catch(() => {});
+            });
+        }
     </script>
 </body>
 </html>
