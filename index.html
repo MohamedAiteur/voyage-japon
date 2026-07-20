@@ -1540,6 +1540,16 @@
                     <input type="text" id="vol-layover-duration">
                 </div>
             </div>
+            <div style="display: flex; gap: 10px;">
+                <div class="input-group" style="flex: 1;">
+                    <label>Arrivée à l'escale</label>
+                    <input type="text" id="vol-layover-arr-time" placeholder="Ex: 18:20">
+                </div>
+                <div class="input-group" style="flex: 1;">
+                    <label>Départ de l'escale</label>
+                    <input type="text" id="vol-layover-dep-time" placeholder="Ex: 20:15">
+                </div>
+            </div>
 
             <!-- Segment 2 -->
             <h4 class="section-title" style="margin-top: 15px; margin-bottom: 5px;">Segment 2 (Arrivée finale)</h4>
@@ -2488,10 +2498,16 @@
             `;
 
             if (vol.layoverCode) {
+                const layoverTimesHtml = (vol.layoverArrTime || vol.layoverDepTime)
+                    ? `<div style="font-weight: 600; font-size: 0.78rem; opacity: 0.85; margin-top: 2px;">Arrivée ${esc(vol.layoverArrTime || '—')} · Départ ${esc(vol.layoverDepTime || '—')}</div>`
+                    : '';
                 html += `
                     <div class="layover-card">
                         <i class="fa-solid fa-clock"></i>
-                        <span>Escale à ${esc(vol.layoverCode)} (${esc(vol.layoverDuration || '')})</span>
+                        <div>
+                            <span>Escale à ${esc(vol.layoverCode)} (${esc(vol.layoverDuration || '')})</span>
+                            ${layoverTimesHtml}
+                        </div>
                     </div>
                     <div class="flight-detail-segment">
                         <div class="segment-dot"></div>
@@ -2531,7 +2547,8 @@
             document.getElementById('vol-modal-title').innerText = "Ajouter un vol";
             document.getElementById('vol-edit-index').value = "";
             ['vol-type', 'vol-compagnie', 'vol-date', 'vol-dep', 'vol-dep-city', 'vol-dep-terminal', 'vol-dep-time',
-             'vol-num-1', 'vol-layover-code', 'vol-layover-duration', 'vol-arr', 'vol-arr-city', 'vol-arr-terminal',
+             'vol-num-1', 'vol-layover-code', 'vol-layover-duration', 'vol-layover-arr-time', 'vol-layover-dep-time',
+             'vol-arr', 'vol-arr-city', 'vol-arr-terminal',
              'vol-arr-time', 'vol-num-2', 'vol-aircraft', 'vol-seats', 'vol-pnr', 'vol-ticket-link'
             ].forEach(id => { document.getElementById(id).value = ''; });
             openModal('modal-vol');
@@ -2554,6 +2571,8 @@
 
                 document.getElementById('vol-layover-code').value = vol.layoverCode || '';
                 document.getElementById('vol-layover-duration').value = vol.layoverDuration || '';
+                document.getElementById('vol-layover-arr-time').value = vol.layoverArrTime || '';
+                document.getElementById('vol-layover-dep-time').value = vol.layoverDepTime || '';
 
                 document.getElementById('vol-arr').value = vol.arr || '';
                 document.getElementById('vol-arr-city').value = vol.arrCity || '';
@@ -2585,6 +2604,8 @@
 
                 layoverCode: document.getElementById('vol-layover-code').value,
                 layoverDuration: document.getElementById('vol-layover-duration').value,
+                layoverArrTime: document.getElementById('vol-layover-arr-time').value,
+                layoverDepTime: document.getElementById('vol-layover-dep-time').value,
 
                 arr: document.getElementById('vol-arr').value,
                 arrCity: document.getElementById('vol-arr-city').value,
