@@ -2062,7 +2062,18 @@
             'kumamoto': [32.7898, 130.7417],
             'nagasaki': [32.7503, 129.8779],
             'sendai': [38.2682, 140.8694],
-            'himeji': [34.8394, 134.6939]
+            'himeji': [34.8394, 134.6939],
+            // Quartiers/zones fréquents : rattachés aux coordonnées de leur ville,
+            // au cas où "ville" contient un nom de quartier plutôt que la ville
+            'shinjuku': [35.6762, 139.6503], 'shibuya': [35.6762, 139.6503],
+            'asakusa': [35.6762, 139.6503], 'ginza': [35.6762, 139.6503],
+            'akihabara': [35.6762, 139.6503], 'roppongi': [35.6762, 139.6503],
+            'ueno': [35.6762, 139.6503], 'harajuku': [35.6762, 139.6503],
+            'namba': [34.6937, 135.5023], 'dotonbori': [34.6937, 135.5023],
+            'umeda': [34.6937, 135.5023], 'shinsaibashi': [34.6937, 135.5023],
+            'gion': [35.0116, 135.7681], 'arashiyama': [35.0116, 135.7681],
+            'higashiyama': [35.0116, 135.7681], 'fushimi': [35.0116, 135.7681],
+            'kawaramachi': [35.0116, 135.7681]
         };
 
         const weatherCache = {};
@@ -2082,12 +2093,39 @@
             badge.style.display = '';
         }
 
+        // Position GPS de l'appareil (préférée) : plus fiable que de deviner via
+        // le nom de la ville dans Programme. Repli sur la destination du
+        // Programme si la géolocalisation est refusée/indisponible.
+        function getDeviceLocation() {
+            return new Promise(resolve => {
+                if (!navigator.geolocation) { resolve(null); return; }
+                // Filet de sécurité : certains navigateurs/contextes ne déclenchent
+                // jamais le callback d'erreur (permission jamais accordée ni
+                // refusée), donc l'option "timeout" native ne suffit pas toujours.
+                let settled = false;
+                const done = (value) => { if (!settled) { settled = true; resolve(value); } };
+                setTimeout(() => done(null), 5000);
+                navigator.geolocation.getCurrentPosition(
+                    pos => done([
+                        Math.round(pos.coords.latitude * 100) / 100,
+                        Math.round(pos.coords.longitude * 100) / 100
+                    ]),
+                    () => done(null),
+                    { timeout: 5000, maximumAge: 15 * 60 * 1000 }
+                );
+            });
+        }
+
         async function fetchAndShowWeather() {
             const badge = document.getElementById('today-card-weather');
             if (!badge) return;
-            const dest = getCurrentOrNextDestination();
-            const coords = dest ? findCityCoords(dest.ville) : null;
+            let coords = await getDeviceLocation();
+            if (!coords) {
+                const dest = getCurrentOrNextDestination();
+                coords = dest ? findCityCoords(dest.ville) : null;
+            }
             if (!coords) return;
+            if (!document.body.contains(badge)) return;
 
             const cacheKey = coords.join(',');
             if (cacheKey in weatherCache) {
@@ -2188,12 +2226,27 @@
 
         var appData = JSON.parse(localStorage.getItem('voyage_japon_data')) || defaultData;
 
-        // Rétrocompatibilité si d'anciennes données sans dates globales existent
-        if (!appData.tripTitle) appData.tripTitle = defaultData.tripTitle;
-        if (!appData.tripStart) appData.tripStart = defaultData.tripStart;
-        if (!appData.tripEnd) appData.tripEnd = defaultData.tripEnd;
-        if (!appData.transports) appData.transports = [];
-        if (!appData.billets) appData.billets = [];
+        // Rétrocompatibilité : complète les champs manquants sur d'anciennes
+        // données (locales OU reçues du cloud). Doit être appelée à chaque fois
+        // qu'un nouveau jeu de données remplace appData en entier — pas
+        // seulement au chargement initial — sinon un document Firestore créé
+        // avant l'ajout d'une fonctionnalité (ex: billets) fait planter les
+        // actions qui y touchent (ex: "Enregistrer" un billet) après une sync.
+        function ensureDataShape() {
+            if (!appData.tripTitle) appData.tripTitle = defaultData.tripTitle;
+            if (!appData.tripStart) appData.tripStart = defaultData.tripStart;
+            if (!appData.tripEnd) appData.tripEnd = defaultData.tripEnd;
+            if (!appData.vols) appData.vols = [];
+            if (!appData.programme) appData.programme = [];
+            if (!appData.checklist) appData.checklist = [];
+            if (!appData.budget) appData.budget = [];
+            if (!appData.infos) appData.infos = [];
+            if (!appData.transports) appData.transports = [];
+            if (!appData.billets) appData.billets = [];
+            if (!appData.checklistsJour) appData.checklistsJour = {};
+        }
+        window.ensureDataShape = ensureDataShape;
+        ensureDataShape();
 
         // Migre l'ancien format (une entrée par jour) vers le nouveau format
         // (une entrée par ville avec une plage de dates), en regroupant les
@@ -3695,6 +3748,7 @@
             const lien = document.getElementById('billet-lien').value.trim();
             const notes = document.getElementById('billet-notes').value.trim();
             if (!nom) return;
+            if (!appData.billets) appData.billets = [];
 
             if (editId) {
                 const billet = appData.billets.find(b => b.id === parseInt(editId));
@@ -3889,6 +3943,7 @@ function saveProgramme() {
             if (localWriteInProgress) return;
             if (snap.exists()) {
                 window.appData = snap.data();
+                if (window.ensureDataShape) window.ensureDataShape();
                 if (window.migrateLegacyProgramme) window.migrateLegacyProgramme();
                 if (window.refreshAllUI) window.refreshAllUI();
             } else if (auth.currentUser) {
